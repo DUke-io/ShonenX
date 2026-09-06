@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_discord_rpc/flutter_discord_rpc.dart';
 import 'package:http/http.dart' as http;
-import 'package:shonenx/core/utils/app_logger.dart';
-import 'package:shonenx/shared/models/unified_media.dart';
+import 'package:KuroX/core/utils/app_logger.dart';
+import 'package:KuroX/shared/models/unified_media.dart';
 
 class DiscordRpcService {
   static const String applicationId = '1435544312296505394';
@@ -166,8 +166,8 @@ class DiscordRpcService {
         'token': _token,
         'properties': {
           '\$os': Platform.operatingSystem,
-          '\$browser': 'ShonenX',
-          '\$device': 'ShonenX Client',
+          '\$browser': 'KuroX',
+          '\$device': 'KuroX Client',
         },
         'presence': {'status': 'online', 'afk': false},
       },
@@ -316,12 +316,12 @@ class DiscordRpcService {
         largeImage: coverUrl ?? _appIconUrl,
         largeText: title,
         smallImage: _appIconUrl,
-        smallText: 'ShonenX',
+        smallText: 'KuroX',
       ),
       buttons: [
         RPCButton(label: 'View Anime', url: mediaUrl),
         const RPCButton(
-          label: 'Watch on ShonenX',
+          label: 'Watch on KuroX',
           url: 'https://github.com/Zcross091/KuroX',
         ),
       ],
@@ -334,7 +334,7 @@ class DiscordRpcService {
         'activities': [
           {
             'application_id': applicationId,
-            'name': 'ShonenX',
+            'name': 'KuroX',
             'type': 3,
             'details': title,
             'state': stateString,
@@ -346,9 +346,9 @@ class DiscordRpcService {
               'large_image': await _processImageUrl(coverUrl),
               'large_text': title,
               'small_image': await _processImageUrl(_appIconUrl),
-              'small_text': 'ShonenX',
+              'small_text': 'KuroX',
             },
-            'buttons': ['View Anime', 'Watch on ShonenX'],
+            'buttons': ['View Anime', 'Watch on KuroX'],
             'metadata': {
               'button_urls': [
                 mediaUrl,
@@ -393,12 +393,12 @@ class DiscordRpcService {
         largeImage: coverUrl ?? _appIconUrl,
         largeText: title,
         smallImage: _appIconUrl,
-        smallText: 'ShonenX',
+        smallText: 'KuroX',
       ),
       buttons: [
         RPCButton(label: 'View Anime', url: mediaUrl),
         const RPCButton(
-          label: 'Watch on ShonenX',
+          label: 'Watch on KuroX',
           url: 'https://github.com/Zcross091/KuroX',
         ),
       ],
@@ -411,7 +411,7 @@ class DiscordRpcService {
         'activities': [
           {
             'application_id': applicationId,
-            'name': 'ShonenX',
+            'name': 'KuroX',
             'type': 3,
             'details': title,
             'state': 'Episode $episodeNumber$timeDisplay (Paused)',
@@ -419,9 +419,9 @@ class DiscordRpcService {
               'large_image': await _processImageUrl(coverUrl),
               'large_text': title,
               'small_image': await _processImageUrl(_appIconUrl),
-              'small_text': 'ShonenX',
+              'small_text': 'KuroX',
             },
-            'buttons': ['View Anime', 'Watch on ShonenX'],
+            'buttons': ['View Anime', 'Watch on KuroX'],
             'metadata': {
               'button_urls': [
                 mediaUrl,
@@ -476,12 +476,12 @@ class DiscordRpcService {
         largeImage: coverUrl ?? _appIconUrl,
         largeText: title,
         smallImage: _appIconUrl,
-        smallText: 'ShonenX',
+        smallText: 'KuroX',
       ),
       buttons: [
         RPCButton(label: 'View Manga', url: mediaUrl),
         const RPCButton(
-          label: 'Read on ShonenX',
+          label: 'Read on KuroX',
           url: 'https://github.com/Zcross091/KuroX',
         ),
       ],
@@ -494,7 +494,7 @@ class DiscordRpcService {
         'activities': [
           {
             'application_id': applicationId,
-            'name': 'ShonenX',
+            'name': 'KuroX',
             'type': 0,
             'details': title,
             'state': '$chString$pageString',
@@ -503,9 +503,9 @@ class DiscordRpcService {
               'large_image': await _processImageUrl(coverUrl),
               'large_text': title,
               'small_image': await _processImageUrl(_appIconUrl),
-              'small_text': 'ShonenX',
+              'small_text': 'KuroX',
             },
-            'buttons': ['View Manga', 'Read on ShonenX'],
+            'buttons': ['View Manga', 'Read on KuroX'],
             'metadata': {
               'button_urls': [
                 mediaUrl,
@@ -552,12 +552,12 @@ class DiscordRpcService {
         largeImage: coverUrl ?? _appIconUrl,
         largeText: title,
         smallImage: _appIconUrl,
-        smallText: 'ShonenX',
+        smallText: 'KuroX',
       ),
       buttons: [
         RPCButton(label: 'View $typeStr', url: mediaUrl),
         const RPCButton(
-          label: 'Get ShonenX',
+          label: 'Get KuroX',
           url: 'https://github.com/Zcross091/KuroX',
         ),
       ],
@@ -575,7 +575,7 @@ class DiscordRpcService {
         'activities': [
           {
             'application_id': applicationId,
-            'name': 'ShonenX',
+            'name': 'KuroX',
             'type': 0,
             'details': 'Viewing $title',
             'state': 'Inspecting $typeStr Details',
@@ -584,9 +584,9 @@ class DiscordRpcService {
               'large_image': images[0],
               'large_text': title,
               'small_image': images[1],
-              'small_text': 'ShonenX',
+              'small_text': 'KuroX',
             },
-            'buttons': ['View $typeStr', 'Get ShonenX'],
+            'buttons': ['View $typeStr', 'Get KuroX'],
             'metadata': {
               'button_urls': [
                 mediaUrl,
@@ -617,19 +617,19 @@ class DiscordRpcService {
     _animeStartTimeMs = null;
     _animeEndTimeMs = null;
 
-    _log.i('Updating Browsing presence: ${activity ?? 'Glazing ShonenX'}');
+    _log.i('Updating Browsing presence: ${activity ?? 'Glazing KuroX'}');
 
     final desktopActivity = RPCActivity(
-      details: activity ?? 'Glazing ShonenX',
+      details: activity ?? 'Glazing KuroX',
       state: details ?? 'Browsing Catalog',
       timestamps: RPCTimestamps(start: _browsingStartTimeMs),
       assets: const RPCAssets(
         largeImage: _appIconUrl,
-        largeText: 'ShonenX - Anime & Manga Client',
+        largeText: 'KuroX - Anime & Manga Client',
       ),
       buttons: const [
         RPCButton(
-          label: 'Get ShonenX',
+          label: 'Get KuroX',
           url: 'https://github.com/Zcross091/KuroX',
         ),
       ],
@@ -642,16 +642,16 @@ class DiscordRpcService {
         'activities': [
           {
             'application_id': applicationId,
-            'name': 'ShonenX',
+            'name': 'KuroX',
             'type': 0,
-            'details': activity ?? 'Glazing ShonenX',
+            'details': activity ?? 'Glazing KuroX',
             'state': details ?? 'Browsing Catalog',
             'timestamps': {'start': _browsingStartTimeMs},
             'assets': {
               'large_image': await _processImageUrl(_appIconUrl),
-              'large_text': 'ShonenX - Anime & Manga Client',
+              'large_text': 'KuroX - Anime & Manga Client',
             },
-            'buttons': ['Get ShonenX'],
+            'buttons': ['Get KuroX'],
             'metadata': {
               'button_urls': ['https://github.com/Zcross091/KuroX'],
             },

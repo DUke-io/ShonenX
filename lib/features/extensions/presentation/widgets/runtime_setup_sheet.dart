@@ -5,12 +5,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-import 'package:shonenx/core/network/http_client.dart';
-import 'package:shonenx/core/updates/models/github_release.dart';
-import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
-import 'package:shonenx/source_engine/source_registry.dart';
-import 'package:shonenx/features/extensions/providers/runtime_update_provider.dart';
-import 'package:shonenx/source_engine/utils/source_invalidation.dart';
+import 'package:KuroX/core/network/http_client.dart';
+import 'package:KuroX/core/updates/models/github_release.dart';
+import 'package:KuroX/shared/widgets/app_bottom_sheet.dart';
+import 'package:KuroX/source_engine/source_registry.dart';
+import 'package:KuroX/features/extensions/providers/runtime_update_provider.dart';
+import 'package:KuroX/source_engine/utils/source_invalidation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 Future<void> showRuntimeSetupSheet(
@@ -177,7 +177,7 @@ class _RuntimeSetupSheetState extends ConsumerState<RuntimeSetupSheet> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Runtime updated! Please restart ShonenX for changes to take effect.',
+                'Runtime updated! Please restart KuroX for changes to take effect.',
               ),
               behavior: SnackBarBehavior.floating,
               duration: Duration(seconds: 5),
@@ -376,7 +376,7 @@ class _RuntimeSetupSheetState extends ConsumerState<RuntimeSetupSheet> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Always restart ShonenX after force updating the runtime.',
+                      'Always restart KuroX after force updating the runtime.',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: cs.onSurfaceVariant,
                       ),

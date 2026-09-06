@@ -69,7 +69,7 @@ class AppInit {
       final dir = await getApplicationDocumentsDirectory();
       final dslDir = Platform.isAndroid || Platform.isIOS || Platform.isMacOS
           ? Directory(p.join(dir.path, 'dsl_providers'))
-          : Directory(p.join(dir.path, 'ShonenX', 'dsl_providers'));
+          : Directory(p.join(dir.path, 'KuroX', 'dsl_providers'));
 
       if (await dslDir.exists()) {
         await dslDir.delete(recursive: true);
@@ -127,7 +127,7 @@ class AppInit {
     final log = _log.child('_initDatabase');
 
     try {
-      final dir = await getDatabaseDirectory('ShonenX');
+      final dir = await getDatabaseDirectory('KuroX');
 
       isar = await Isar.open(
         [
@@ -148,7 +148,7 @@ class AppInit {
           KvEntrySchema,
         ],
         directory: dir.path,
-        name: 'shonenx_db',
+        name: 'kurox_db',
       );
 
       // Perform migration from MediaSourcePreference to MediaPreference
@@ -191,10 +191,10 @@ class AppInit {
     try {
       await AnymeXExtensionBridge.init(
         getDirectory: AnymeXExtensionBridge.defaultGetDirectory(
-          baseDirectory: await getDatabaseDirectory('ShonenX'),
+          baseDirectory: await getDatabaseDirectory('KuroX'),
         ),
         http: HTTPAdapter(ref.read(httpClientProvider)),
-        projectName: "ShonenX",
+        projectName: "KuroX",
       );
 
       await AnymeXRuntimeBridge.checkAndInitialize();

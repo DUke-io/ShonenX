@@ -577,7 +577,7 @@ class _ManageReposSheetState extends ConsumerState<ManageReposSheet> {
                   ? null
                   : () {
                       _controller.text =
-                          'https://raw.githubusercontent.com/Zcross091/ShonenX/main/shonenx_repository.json';
+                          'https://raw.githubusercontent.com/Zcross091/KuroX/main/kurox_repository.json';
                       _addRepo();
                     },
               style: OutlinedButton.styleFrom(

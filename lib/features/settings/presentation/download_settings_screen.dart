@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shonenx/core/services/one_dm_service.dart';
-import 'package:shonenx/features/downloads/providers/download_prefs_provider.dart';
-import 'package:shonenx/features/settings/presentation/widgets/settings_ui_components.dart';
-import 'package:shonenx/shared/widgets/app_scaffold.dart';
-import 'package:shonenx/shared/widgets/svg_icon.dart';
-import 'package:shonenx/shared/widgets/app_dialog.dart';
+import 'package:KuroX/core/services/one_dm_service.dart';
+import 'package:KuroX/features/downloads/providers/download_prefs_provider.dart';
+import 'package:KuroX/features/settings/presentation/widgets/settings_ui_components.dart';
+import 'package:KuroX/shared/widgets/app_scaffold.dart';
+import 'package:KuroX/shared/widgets/svg_icon.dart';
+import 'package:KuroX/shared/widgets/app_dialog.dart';
 
 class DownloadSettingsScreen extends ConsumerWidget {
   const DownloadSettingsScreen({super.key});
@@ -312,7 +312,7 @@ class DownloadSettingsScreen extends ConsumerWidget {
                                     child: const Text(
                                       '1DM (Internet Download Manager) is a popular third-party Android download manager app. '
                                       'It supports up to 32 parallel download connections, background downloads, and smart error recovery.\n\n'
-                                      'If installed, ShonenX can send episode download streams directly to 1DM.',
+                                      'If installed, KuroX can send episode download streams directly to 1DM.',
                                     ),
                                     actions: [
                                       TextButton(

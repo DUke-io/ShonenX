@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shonenx/core/router/app_navigator.dart';
-import 'package:shonenx/features/player/domain/player_mode.dart';
-import 'package:shonenx/features/downloads/domain/models/download_task.dart';
-import 'package:shonenx/features/downloads/providers/download_prefs_provider.dart';
-import 'package:shonenx/features/downloads/providers/download_provider.dart';
-import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
-import 'package:shonenx/shared/widgets/app_scaffold.dart';
+import 'package:KuroX/core/router/app_navigator.dart';
+import 'package:KuroX/features/player/domain/player_mode.dart';
+import 'package:KuroX/features/downloads/domain/models/download_task.dart';
+import 'package:KuroX/features/downloads/providers/download_prefs_provider.dart';
+import 'package:KuroX/features/downloads/providers/download_provider.dart';
+import 'package:KuroX/shared/widgets/app_bottom_sheet.dart';
+import 'package:KuroX/shared/widgets/app_scaffold.dart';
 
 sealed class OfflineItem {
   final String name;
@@ -115,7 +115,7 @@ class DownloadsScreen extends ConsumerWidget {
 
   Future<void> _addTestDownload(BuildContext context, WidgetRef ref) async {
     final dir = await getApplicationDocumentsDirectory();
-    final saveDir = Directory('${dir.path}/ShonenX/Downloads');
+    final saveDir = Directory('${dir.path}/KuroX/Downloads');
     if (!await saveDir.exists()) await saveDir.create(recursive: true);
 
     final ts = DateTime.now().millisecondsSinceEpoch;
@@ -704,7 +704,7 @@ class _DownloadedFilesTabState extends ConsumerState<_DownloadedFilesTab> {
                     children: [
                       Icon(Icons.play_arrow_rounded, size: 20),
                       SizedBox(width: 12),
-                      Text('Play in ShonenX'),
+                      Text('Play in KuroX'),
                     ],
                   ),
                 ),

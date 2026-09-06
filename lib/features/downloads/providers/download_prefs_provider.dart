@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shonenx/shared/providers/storage_provider.dart';
+import 'package:KuroX/shared/providers/storage_provider.dart';
 
 enum FileNameFormat {
   titleAndEpisode,
@@ -162,11 +162,11 @@ class DownloadPrefsNotifier extends AsyncNotifier<DownloadPrefs> {
     if (Platform.isAndroid) {
       final extDir = await getExternalStorageDirectory();
       defaultPath = extDir != null
-          ? '${extDir.path}/ShonenX'
-          : '/storage/emulated/0/ShonenX';
+          ? '${extDir.path}/KuroX'
+          : '/storage/emulated/0/KuroX';
     } else {
       final docDir = await getApplicationDocumentsDirectory();
-      defaultPath = '${docDir.path}/ShonenX/Downloads';
+      defaultPath = '${docDir.path}/KuroX/Downloads';
     }
 
     if (jsonStr != null) {
@@ -249,10 +249,10 @@ class DownloadPrefsNotifier extends AsyncNotifier<DownloadPrefs> {
 
   Future<String> getDefaultDownloadPath() async {
     if (Platform.isAndroid) {
-      return '/storage/emulated/0/Download/ShonenX';
+      return '/storage/emulated/0/Download/KuroX';
     } else {
       final docDir = await getApplicationDocumentsDirectory();
-      return '${docDir.path}/ShonenX/Downloads';
+      return '${docDir.path}/KuroX/Downloads';
     }
   }
 

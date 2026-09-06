@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:shonenx/features/discord/models/discord_rpc_custom_settings.dart';
-import 'package:shonenx/features/discord/models/discord_user.dart';
+import 'package:KuroX/features/discord/models/discord_rpc_custom_settings.dart';
+import 'package:KuroX/features/discord/models/discord_user.dart';
 
 enum RpcPreviewTab { idle, watching, reading }
 
@@ -26,7 +26,7 @@ class _DiscordRpcPreviewCardState extends State<DiscordRpcPreviewCard> {
   @override
   Widget build(BuildContext context) {
     String headerText = 'Playing';
-    String mainTitle = 'ShonenX';
+    String mainTitle = 'KuroX';
     String subTitle1 = widget.settings.idleActivity;
     String subTitle2 = widget.settings.idleDetails;
     String startTime = '12:00';
@@ -38,7 +38,7 @@ class _DiscordRpcPreviewCardState extends State<DiscordRpcPreviewCard> {
     switch (_activeTab) {
       case RpcPreviewTab.idle:
         headerText = 'Playing';
-        mainTitle = 'ShonenX';
+        mainTitle = 'KuroX';
         subTitle1 = widget.settings.idleActivity;
         subTitle2 = widget.settings.idleDetails;
         coverUrl = null;
@@ -46,10 +46,10 @@ class _DiscordRpcPreviewCardState extends State<DiscordRpcPreviewCard> {
         break;
 
       case RpcPreviewTab.watching:
-        headerText = 'Watching ShonenX';
+        headerText = 'Watching KuroX';
         mainTitle = 'One Piece';
         subTitle1 = 'Episode 7 – Orewa Kaizoku Ou Ni Naru!';
-        subTitle2 = 'ShonenX';
+        subTitle2 = 'KuroX';
         startTime = '12:00';
         endTime = '20:00';
         progressRatio = 0.6;
@@ -58,10 +58,10 @@ class _DiscordRpcPreviewCardState extends State<DiscordRpcPreviewCard> {
         break;
 
       case RpcPreviewTab.reading:
-        headerText = 'Reading ShonenX';
+        headerText = 'Reading KuroX';
         mainTitle = 'One Piece';
         subTitle1 = 'Chapter 236 • Page 14/20';
-        subTitle2 = 'ShonenX Reader';
+        subTitle2 = 'KuroX Reader';
         startTime = '12:00';
         endTime = '--:--';
         progressRatio = 0.7;

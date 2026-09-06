@@ -1,18 +1,18 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shonenx/features/auth/providers/auth_provider.dart';
-import 'package:shonenx/features/settings/presentation/widgets/settings_ui_components.dart';
-import 'package:shonenx/features/tracking/domain/models/tracker_type.dart';
-import 'package:shonenx/features/tracking/engine/remote_tracker.dart';
-import 'package:shonenx/features/tracking/providers/tracker_registry.dart';
-import 'package:shonenx/features/tracking/providers/tracking_prefs_provider.dart';
-import 'package:shonenx/features/tracking/presentation/widgets/tracker_profile_sheet.dart';
-import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
-import 'package:shonenx/shared/widgets/app_dialog.dart';
-import 'package:shonenx/shared/widgets/app_scaffold.dart';
-import 'package:shonenx/shared/widgets/tracker_avatar.dart';
-import 'package:shonenx/core/utils/env.dart';
+import 'package:KuroX/features/auth/providers/auth_provider.dart';
+import 'package:KuroX/features/settings/presentation/widgets/settings_ui_components.dart';
+import 'package:KuroX/features/tracking/domain/models/tracker_type.dart';
+import 'package:KuroX/features/tracking/engine/remote_tracker.dart';
+import 'package:KuroX/features/tracking/providers/tracker_registry.dart';
+import 'package:KuroX/features/tracking/providers/tracking_prefs_provider.dart';
+import 'package:KuroX/features/tracking/presentation/widgets/tracker_profile_sheet.dart';
+import 'package:KuroX/shared/widgets/app_bottom_sheet.dart';
+import 'package:KuroX/shared/widgets/app_dialog.dart';
+import 'package:KuroX/shared/widgets/app_scaffold.dart';
+import 'package:KuroX/shared/widgets/tracker_avatar.dart';
+import 'package:KuroX/core/utils/env.dart';
 
 class TrackingSettingsScreen extends ConsumerStatefulWidget {
   const TrackingSettingsScreen({super.key});
@@ -180,7 +180,7 @@ class _TrackingSettingsScreenState
                           const SizedBox(height: 16),
 
                           Text(
-                            'Incognito Mode temporarily prevents ShonenX from updating your connected trackers while you browse, read, or watch.',
+                            'Incognito Mode temporarily prevents KuroX from updating your connected trackers while you browse, read, or watch.',
                             style: textTheme.bodyMedium,
                           ),
 
@@ -296,7 +296,7 @@ class _TrackingSettingsScreenState
 
                           Text(
                             'Normally you need to manually link anime and manga to your tracker. '
-                            'With Auto Track Primary enabled, ShonenX attempts to do that automatically whenever possible.',
+                            'With Auto Track Primary enabled, KuroX attempts to do that automatically whenever possible.',
                             style: textTheme.bodyMedium,
                           ),
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shonenx/features/security/providers/security_provider.dart';
+import 'package:KuroX/features/security/providers/security_provider.dart';
 
 enum AppLockMode { unlock, setup, confirm }
 
@@ -50,7 +50,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen>
   void _updateStatusMessage() {
     switch (widget.mode) {
       case AppLockMode.unlock:
-        _statusMessage = 'Enter PIN to unlock ShonenX';
+        _statusMessage = 'Enter PIN to unlock KuroX';
         break;
       case AppLockMode.setup:
         _statusMessage = 'Create a 4-digit PIN';
@@ -183,7 +183,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen>
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    'ShonenX Security',
+                    'KuroX Security',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

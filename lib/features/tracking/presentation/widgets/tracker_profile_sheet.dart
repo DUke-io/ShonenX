@@ -3,19 +3,19 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shonenx/shared/providers/ui_prefs_provider.dart';
-import 'package:shonenx/features/auth/providers/auth_provider.dart';
-import 'package:shonenx/features/tracking/domain/models/tracker_profile.dart';
-import 'package:shonenx/features/tracking/domain/models/tracker_type.dart';
-import 'package:shonenx/features/tracking/engine/remote_tracker.dart';
-import 'package:shonenx/features/tracking/providers/tracker_profile_provider.dart';
-import 'package:shonenx/features/tracking/engine/trackers/anilist/anilist_tracker.dart';
-import 'package:shonenx/features/tracking/providers/shonenx_metrics_provider.dart';
-import 'package:shonenx/features/tracking/providers/tracker_registry.dart';
-import 'package:shonenx/features/tracking/providers/tracking_prefs_provider.dart';
-import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
-import 'package:shonenx/shared/widgets/app_dialog.dart';
-import 'package:shonenx/shared/widgets/tracker_avatar.dart';
+import 'package:KuroX/shared/providers/ui_prefs_provider.dart';
+import 'package:KuroX/features/auth/providers/auth_provider.dart';
+import 'package:KuroX/features/tracking/domain/models/tracker_profile.dart';
+import 'package:KuroX/features/tracking/domain/models/tracker_type.dart';
+import 'package:KuroX/features/tracking/engine/remote_tracker.dart';
+import 'package:KuroX/features/tracking/providers/tracker_profile_provider.dart';
+import 'package:KuroX/features/tracking/engine/trackers/anilist/anilist_tracker.dart';
+import 'package:KuroX/features/tracking/providers/KuroX_metrics_provider.dart';
+import 'package:KuroX/features/tracking/providers/tracker_registry.dart';
+import 'package:KuroX/features/tracking/providers/tracking_prefs_provider.dart';
+import 'package:KuroX/shared/widgets/app_bottom_sheet.dart';
+import 'package:KuroX/shared/widgets/app_dialog.dart';
+import 'package:KuroX/shared/widgets/tracker_avatar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TrackerProfileSheet extends ConsumerStatefulWidget {
@@ -360,7 +360,7 @@ class _TrackerProfileSheetState extends ConsumerState<TrackerProfileSheet> {
         (isRemote ? widget.trackerType.displayName : 'Guest');
     final gamerTitle = _computeTitle(profile);
     final lastSynced = _formatTimeAgo(profile?.lastSyncedAt);
-    final localMetricsAsync = ref.watch(shonenxLocalMetricsProvider);
+    final localMetricsAsync = ref.watch(KuroXLocalMetricsProvider);
 
     return Column(
       key: const ValueKey('dash'),
@@ -541,7 +541,7 @@ class _TrackerProfileSheetState extends ConsumerState<TrackerProfileSheet> {
           ),
         ],
         localMetricsAsync.when(
-          data: (m) => _buildShonenxExclusiveCard(theme, cs, m),
+          data: (m) => _buildKuroXExclusiveCard(theme, cs, m),
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
         ),
@@ -851,10 +851,10 @@ class _TrackerProfileSheetState extends ConsumerState<TrackerProfileSheet> {
     );
   }
 
-  Widget _buildShonenxExclusiveCard(
+  Widget _buildKuroXExclusiveCard(
     ThemeData theme,
     ColorScheme cs,
-    ShonenxLocalMetrics m,
+    KuroXLocalMetrics m,
   ) {
     return Container(
       margin: const EdgeInsets.only(top: 24),
@@ -872,7 +872,7 @@ class _TrackerProfileSheetState extends ConsumerState<TrackerProfileSheet> {
               Icon(Icons.analytics_outlined, size: 18, color: cs.primary),
               const SizedBox(width: 8),
               Text(
-                'ShonenX Local Telemetry',
+                'KuroX Local Telemetry',
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -881,7 +881,7 @@ class _TrackerProfileSheetState extends ConsumerState<TrackerProfileSheet> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Device-only interaction analytics powered by ShonenX Engine',
+            'Device-only interaction analytics powered by KuroX Engine',
             style: theme.textTheme.labelSmall?.copyWith(
               color: cs.onSurfaceVariant,
             ),
