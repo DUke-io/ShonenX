@@ -1,0 +1,26 @@
+title: "Feature Idea & Brainstorming"
+labels: ["idea", "discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share open-ended ideas, brainstorming sessions, or feature concepts for KuroX.
+        For formal, concrete feature requests, you can also use our [Feature Request Issue Form](https://github.com/Zcross091/KuroX/issues/new?template=feature_request.yml).
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: "Idea Summary"
+      description: "Give a brief summary of the concept."
+      placeholder: "What if KuroX had..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: "In-Depth Proposal & Community Feedback"
+      description: "How could this work? What questions or trade-offs should the community weigh in on?"
+      placeholder: "Describe the user flow, UI considerations, or backend requirements..."
+    validations:
+      required: true

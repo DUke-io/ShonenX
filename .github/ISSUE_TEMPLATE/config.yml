@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "💬 Discord Community"
+    url: "https://discord.gg/WXrCUpGG2"
+    about: "Join the official KuroX community for real-time discussions, troubleshooting, and anime chats!"
+  - name: "📦 Latest Releases"
+    url: "https://github.com/Zcross091/KuroX/releases"
+    about: "Download the latest APK, Windows, and Linux builds of KuroX."
+  - name: "💡 GitHub Discussions"
+    url: "https://github.com/Zcross091/KuroX/discussions"
+    about: "Engage in community conversations, Q&A, and brainstorm new features."

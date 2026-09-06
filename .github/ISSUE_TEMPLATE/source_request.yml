@@ -1,0 +1,72 @@
+name: "📺 Source / Provider Request"
+description: "Request a new media source or report broken extraction for an existing provider"
+title: "[Source]: "
+labels: ["source", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to request a new anime/manga source or report issues with video streams, subtitles, or page extraction.
+
+  - type: input
+    id: source_name
+    attributes:
+      label: "Source / Provider Name"
+      description: "What is the name of the website or provider?"
+      placeholder: "e.g., HiAnime, AnimePahe, MangaDex"
+    validations:
+      required: true
+
+  - type: input
+    id: source_url
+    attributes:
+      label: "Source Base URL"
+      description: "The primary URL of the source."
+      placeholder: "e.g., https://hianime.to"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: media_type
+    attributes:
+      label: "Media Type"
+      options:
+        - "Anime (Sub & Dub)"
+        - "Manga / Manhwa / Manhua"
+        - "Donghua (Chinese Animation)"
+        - "Light Novels"
+        - "Multi-Media"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: "Request Type"
+      options:
+        - "New Source Request"
+        - "Broken Stream / Video Extraction"
+        - "Missing Subtitles / Audios"
+        - "Broken Search / Catalogue"
+        - "Cloudflare / Anti-Bot Issue"
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: "Details & Sample Links"
+      description: "Provide sample URLs or specific anime/manga titles to reproduce the issue or examine the site structure."
+      placeholder: "Include sample episode links, video server names, or error details..."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "Checklist"
+      options:
+        - label: "I have confirmed the website is currently online and accessible in a standard browser."
+          required: true
+        - label: "I have verified that KuroX and its extension runtime are up to date."
+          required: true

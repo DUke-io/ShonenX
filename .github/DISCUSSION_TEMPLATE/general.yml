@@ -1,0 +1,17 @@
+title: "General Discussion"
+labels: ["discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welcome to the KuroX community discussion!
+        Share your thoughts, favorite anime/manga setups, or chat with other community members.
+
+  - type: textarea
+    id: topic
+    attributes:
+      label: "Topic or Discussion"
+      description: "What would you like to discuss?"
+      placeholder: "Start your discussion here..."
+    validations:
+      required: true

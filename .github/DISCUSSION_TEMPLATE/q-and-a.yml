@@ -1,0 +1,35 @@
+title: "Question & Answer"
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help setting up KuroX, adding extension providers, or troubleshooting playback?
+        Ask your question below! You can also ask directly in our **[Discord Server](https://discord.gg/WXrCUpGG2)**.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: "Your Question"
+      description: "Ask your question clearly and describe what you are trying to accomplish."
+      placeholder: "How do I..."
+    validations:
+      required: true
+
+  - type: input
+    id: context
+    attributes:
+      label: "Device & Platform"
+      description: "e.g., Windows 11, Android 14, Arch Linux"
+      placeholder: "e.g., Android 14"
+    validations:
+      required: false
+
+  - type: textarea
+    id: attempts
+    attributes:
+      label: "What have you tried so far?"
+      description: "Describe any troubleshooting steps you have already taken."
+      placeholder: "I tried updating the extension runtime..."
+    validations:
+      required: false

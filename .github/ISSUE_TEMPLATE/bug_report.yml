@@ -1,0 +1,114 @@
+name: "🐛 Bug Report"
+description: "Report a bug or unexpected behavior in KuroX"
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please search existing issues first to avoid duplicates.
+        For general questions or community support, join our **[Discord Server](https://discord.gg/WXrCUpGG2)**.
+
+  - type: input
+    id: version
+    attributes:
+      label: "KuroX Version"
+      description: "Enter the version of KuroX you are currently running (e.g., v2.1.4+1)."
+      placeholder: "e.g., v2.1.4+1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: "Operating System & Device"
+      description: "Which platform are you using KuroX on?"
+      options:
+        - "Android (Phone / Tablet)"
+        - "Android TV / Google TV"
+        - "Windows 11"
+        - "Windows 10"
+        - "Linux (Arch / Ubuntu / Debian / Fedora / Other)"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Affected Component"
+      description: "Which part of the app is encountering the issue?"
+      options:
+        - "Video Playback & Media Player"
+        - "Manga Reader"
+        - "Native Sources (HiAnime, GogoAnime, etc.)"
+        - "Extension Bridge & Community Sources"
+        - "Tracker Sync (AniList, MAL, Simkl)"
+        - "Downloads & Offline Storage"
+        - "Discord Rich Presence (RPC)"
+        - "Theme & UI / Navigation"
+        - "App Startup & Database"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Bug Description"
+      description: "A clear and concise description of what the bug is."
+      placeholder: "Explain what happens unexpectedly..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Steps to Reproduce"
+      description: "Exact steps to reproduce the issue."
+      placeholder: |
+        1. Open KuroX
+        2. Go to '...'
+        3. Click on '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: "What did you expect to happen?"
+      placeholder: "Describe what should have happened..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Relevant Logs or Error Output"
+      description: "Paste any crash logs, error messages, or terminal output here."
+      render: shell
+      placeholder: "Paste logs here..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: media
+    attributes:
+      label: "Screenshots or Screen Recordings"
+      description: "Drag and drop any screenshots or screen recordings that illustrate the issue."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "Checklist"
+      options:
+        - label: "I have confirmed that I am using the latest release of KuroX."
+          required: true
+        - label: "I have searched existing open and closed issues and confirmed this is not a duplicate."
+          required: true
+        - label: "I have provided all requested information above."
+          required: true

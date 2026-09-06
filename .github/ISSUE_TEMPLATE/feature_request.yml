@@ -1,0 +1,55 @@
+name: "✨ Feature Request"
+description: "Suggest a new idea or improvement for KuroX"
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make KuroX even better? We'd love to hear it!
+        Feel free to also discuss ideas in our **[Discord Server](https://discord.gg/WXrCUpGG2)** or **[GitHub Discussions](https://github.com/Zcross091/KuroX/discussions)**.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem or Need"
+      description: "Is your feature request related to a problem or limitation? Please describe."
+      placeholder: "I'm always frustrated when..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Proposed Solution"
+      description: "Describe the solution or feature you'd like to see implemented."
+      placeholder: "KuroX could add..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: "Have you considered any alternative solutions or features?"
+      placeholder: "An alternative would be..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: "UI Mockups or References"
+      description: "Attach screenshots, sketches, or examples from other apps if relevant."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "Checklist"
+      options:
+        - label: "I have searched existing feature requests to ensure this has not already been proposed."
+          required: true
+        - label: "I understand that features are implemented based on community interest and maintainer capacity."
+          required: true
