@@ -526,6 +526,7 @@ jobs:
           tag_name: ${{ needs.resolve-release-tag.outputs.tag_name }}
           name: KuroX ${{ needs.resolve-release-tag.outputs.tag_name }}
           prerelease: ${{ needs.resolve-release-tag.outputs.is_prerelease == 'true' }}
+          make_latest: true
           body_path: release_notes.md
           files: release-artifacts/*
         env:
