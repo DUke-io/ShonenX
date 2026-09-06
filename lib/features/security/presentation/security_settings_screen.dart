@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:KuroX/features/security/domain/security_prefs.dart';
-import 'package:KuroX/features/security/presentation/app_lock_screen.dart';
-import 'package:KuroX/features/security/providers/security_provider.dart';
-import 'package:KuroX/features/settings/presentation/widgets/settings_ui_components.dart';
-import 'package:KuroX/shared/widgets/app_bottom_sheet.dart';
+import 'package:shonenx/features/security/domain/security_prefs.dart';
+import 'package:shonenx/features/security/presentation/app_lock_screen.dart';
+import 'package:shonenx/features/security/providers/security_provider.dart';
+import 'package:shonenx/features/settings/presentation/widgets/settings_ui_components.dart';
+import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
 
 class SecuritySettingsScreen extends ConsumerWidget {
   const SecuritySettingsScreen({super.key});

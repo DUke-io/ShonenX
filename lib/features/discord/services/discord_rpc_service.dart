@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_discord_rpc/flutter_discord_rpc.dart';
 import 'package:http/http.dart' as http;
-import 'package:KuroX/core/utils/app_logger.dart';
-import 'package:KuroX/shared/models/unified_media.dart';
+import 'package:shonenx/core/utils/app_logger.dart';
+import 'package:shonenx/shared/models/unified_media.dart';
 
 class DiscordRpcService {
   static const String applicationId = '1435544312296505394';

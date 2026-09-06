@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:KuroX/shared/widgets/app_bottom_sheet.dart';
+import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'manage_repos_sheet.dart';
 

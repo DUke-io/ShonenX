@@ -1,15 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:KuroX/features/discord/models/discord_rpc_custom_settings.dart';
-import 'package:KuroX/features/discord/presentation/discord_login_page.dart';
-import 'package:KuroX/features/discord/presentation/widgets/discord_rpc_preview_card.dart';
-import 'package:KuroX/features/discord/providers/discord_provider.dart';
-import 'package:KuroX/features/discord/providers/discord_rpc_provider.dart';
-import 'package:KuroX/features/settings/presentation/widgets/settings_ui_components.dart';
-import 'package:KuroX/shared/widgets/app_bottom_sheet.dart';
-import 'package:KuroX/shared/widgets/app_dialog.dart';
-import 'package:KuroX/shared/widgets/app_scaffold.dart';
+import 'package:shonenx/features/discord/models/discord_rpc_custom_settings.dart';
+import 'package:shonenx/features/discord/presentation/discord_login_page.dart';
+import 'package:shonenx/features/discord/presentation/widgets/discord_rpc_preview_card.dart';
+import 'package:shonenx/features/discord/providers/discord_provider.dart';
+import 'package:shonenx/features/discord/providers/discord_rpc_provider.dart';
+import 'package:shonenx/features/settings/presentation/widgets/settings_ui_components.dart';
+import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
+import 'package:shonenx/shared/widgets/app_dialog.dart';
+import 'package:shonenx/shared/widgets/app_scaffold.dart';
 
 class DiscordSettingsScreen extends ConsumerWidget {
   const DiscordSettingsScreen({super.key});

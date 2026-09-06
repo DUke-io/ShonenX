@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:KuroX/core/router/app_navigator.dart';
-import 'package:KuroX/features/player/domain/player_mode.dart';
-import 'package:KuroX/features/downloads/domain/models/download_task.dart';
-import 'package:KuroX/features/downloads/providers/download_prefs_provider.dart';
-import 'package:KuroX/features/downloads/providers/download_provider.dart';
-import 'package:KuroX/shared/widgets/app_bottom_sheet.dart';
-import 'package:KuroX/shared/widgets/app_scaffold.dart';
+import 'package:shonenx/core/router/app_navigator.dart';
+import 'package:shonenx/features/player/domain/player_mode.dart';
+import 'package:shonenx/features/downloads/domain/models/download_task.dart';
+import 'package:shonenx/features/downloads/providers/download_prefs_provider.dart';
+import 'package:shonenx/features/downloads/providers/download_provider.dart';
+import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
+import 'package:shonenx/shared/widgets/app_scaffold.dart';
 
 sealed class OfflineItem {
   final String name;
