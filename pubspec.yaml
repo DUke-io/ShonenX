@@ -153,13 +153,13 @@ flutter:
 
 inno_bundle:
   id: 17cd6e7b-cedc-43b7-86b1-4de6ab23dd4d
-  name: ShonenX
+  name: KuroX
   installer_icon: assets/images/installer.ico
-  description: Anilist & MAL Client with extension support, for Anime lovers.
-  publisher: roshancodespace
-  url: https://github.com/roshancodespace/shonenx
-  support_url: https://github.com/roshancodespace/shonenx/issues
-  updates_url: https://github.com/roshancodespace/shonenx/releases
+  description: Fast, modern Anime & Manga client with native instant streaming and AniList/MAL tracking.
+  publisher: Zcross091
+  url: https://github.com/Zcross091/KuroX
+  support_url: https://github.com/Zcross091/KuroX/issues
+  updates_url: https://github.com/Zcross091/KuroX/releases
   languages:
     - english
   vc_redist: download

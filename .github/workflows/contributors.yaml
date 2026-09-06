@@ -1,0 +1,32 @@
+name: Auto Update Contributors
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    # Run once every week on Sunday midnight
+    - cron: '0 0 * * 0'
+
+permissions:
+  contents: write
+
+jobs:
+  contrib-readme-job:
+    runs-on: ubuntu-latest
+    name: Update Contributors in README
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Auto Update Contributors
+        uses: akhilmhdh/contributors-readme-action@v2.3.10
+        with:
+          image_size: 64
+          use_username: true
+          columns_per_row: 6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

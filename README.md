@@ -1,234 +1,96 @@
 <div align="center">
 
-   <img src="https://raw.githubusercontent.com/roshancodespace/shonenx/main/assets/images/app_icon.png" alt="ShonenX Logo" width="120"/>
+   <img src="assets/images/app_icon.png" alt="KuroX Logo" width="130" style="border-radius: 28px;"/>
 
-# ShonenX
+# KuroX
 
-### Read. Watch. Track.
+### Next-Gen Anime & Manga Client • Fast, Modern & Ad-Free
 
-[![Flutter](https://img.shields.io/badge/Flutter-≥3.8.1-02569B?logo=flutter)](https://flutter.dev/)
-[![Dart](https://img.shields.io/badge/Dart-≥3.8.1-0175C2?logo=dart)](https://dart.dev)
-[![Version](https://img.shields.io/badge/Version-1.7.5-blue)](https://github.com/roshancodespace/ShonenX/releases)
+[![Flutter](https://img.shields.io/badge/Flutter-%E2%89%A53.8.1-02569B?logo=flutter)](https://flutter.dev/)
+[![Dart](https://img.shields.io/badge/Dart-%E2%89%A53.8.1-0175C2?logo=dart)](https://dart.dev)
+[![Latest Release](https://img.shields.io/github/v/release/Zcross091/KuroX?color=blue&label=Release)](https://github.com/Zcross091/KuroX/releases)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![GitHub stars](https://img.shields.io/github/stars/roshancodespace/ShonenX?style=social)](https://github.com/roshancodespace/ShonenX/stargazers)
-[![Discord](https://img.shields.io/discord/1348756894034165800?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.gg/uJyXZYSmH4)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/roshan.codespace)
+[![GitHub stars](https://img.shields.io/github/stars/Zcross091/KuroX?style=social)](https://github.com/Zcross091/KuroX/stargazers)
 
-**[🌐 Visit the Official Website](https://shonenx.vercel.app)**
+**KuroX** is a high-performance, open-source anime streaming and manga reading client built with Flutter. Engineered for speed, privacy, and visual elegance, KuroX delivers instant out-of-the-box playback, deep multi-tracker synchronization, and an extensible source architecture.
 
-Started as a personal project, ShonenX is an open-source anime and manga client. Ad-free with no trackers. Tracks progress across AniList, MyAnimeList, and Kitsu.
-
-[Features](#-features) • [Screenshots](#-screenshots) • [Installation](#-installation) • [Extensions](#-extensions) • [Legal](#-legal--dmca-disclaimer)
+[✨ Features](#-key-features) • [📥 Downloads](#-downloads--installation) • [⚙️ Extensions](#-extensions--sources) • [👥 Contributors](#-contributors) • [⚖️ Legal](#-legal--dmca-disclaimer)
 
 </div>
 
 ---
 
-## Supporters
+## ✨ Key Features
 
-<p align="center">
-  <a href="https://www.buymeacoffee.com/roshan.codespace" target="_blank">
-    <img src="https://img.shields.io/badge/Support%20Development-Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee"/>
-  </a>
-</p>
-
-<br/>
-
-<table>
-  <tr>
-    <td align="center">
-        <img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/DEBBB9/IZ.png" width="80px;" />
-        <br />
-        <sub><b>Izan</b></sub>
-    </td>
-    <td align="center">
-        <img src="https://cdn.buymeacoffee.com/uploads/profile_pictures/default/v2/E3CBF4/EK.png" width="80px;" />
-        <br />
-        <sub><b>EVEE KNOA</b></sub>
-    </td>
-  </tr>
-</table>
+- ⚡ **Instant Native Streaming (1s–3s)**: Built-in high-speed native HiAnime provider. No manual repo installation or setup required—open and start streaming immediately in full HD with subtitles and dubbed audio.
+- 🛠️ **Fixed Stream Extraction**: Built-in fixes for the extension bridge ensuring multi-repo sources (Aniyomi, Mangayomi, CloudStream) resolve streams reliably without "No video available" errors.
+- 🧭 **Season Navigator**: Fast season switcher for multi-season franchises, spin-offs, and sequels directly from the anime details screen.
+- 🔒 **App Lock Security**: Built-in biometric and PIN protection for private watchlists, library items, and read history.
+- 📊 **Multi-Tracker Sync**: Real-time progress synchronization with **AniList**, **MyAnimeList**, and **Simkl**.
+- 📥 **Offline Downloads**: Download full episodes and manga chapters for offline viewing anytime.
+- 🖥️ **Cross-Platform**: Tailored experiences across Android (Mobile & TV), Windows (Installer & Portable), and Linux.
 
 ---
 
-## Features
+## 📥 Downloads & Installation
 
-- **Parallel Progress Tracking:** Sync watch and read progress across your linked trackers (AniList, MyAnimeList, and Kitsu).
-- **Custom Reader & Player:** Low-latency media playback and reading with customizable flow controls and AMOLED dark mode support.
-- **Offline Availability:** Volume and episode downloading for offline viewing and reading.
-- **External Extensions:** Utilizes the AnymeX Extension Runtime Bridge for Aniyomi and Mangayomi extension support. The client ships bare-bones; all sources are user-managed.
-- **Cross-Platform:** Native builds for Android, Windows, and Linux.
-
----
-
-## Technology Stack
-
-**Framework**: Flutter ≥3.8.1 | **Language**: Dart ≥3.8.1
-
-<details>
-<summary><b>View Key Dependencies</b></summary>
-
-```yaml
-dependencies:
-  flutter_riverpod: ^3.0.1
-  go_router: ^14.7.1
-  media_kit: ^1.2.6
-  media_kit_video: ^2.0.1
-  isar_community: ^3.3.0
-  flex_color_scheme: ^8.4.0
-```
-
-</details>
-
----
-
-## Screenshots
-
-<details>
-<summary><b>📱 Android Screenshots (Click to expand)</b></summary>
-
-<br/>
-
-<div align="center">
-<table>
-  <tr>
-    <td align="center">
-      <img src="screenshots/mobile/home.jpg" width="200" alt="Home"/>
-      <br/><b>Home</b>
-    </td>
-    <td align="center">
-      <img src="screenshots/mobile/details.jpg" width="200" alt="Details"/>
-      <br/><b>Details</b>
-    </td>
-    <td align="center">
-      <img src="screenshots/mobile/stream.jpg" width="200" alt="Player"/>
-      <br/><b>Player</b>
-    </td>
-    <td align="center">
-      <img src="screenshots/mobile/anilist.jpg" width="200" alt="AniList"/>
-      <br/><b>AniList</b>
-    </td>
-  </tr>
-</table>
-</div>
-
-</details>
-
-<details>
-<summary><b>🖥️ Desktop Views (Windows/Linux)</b></summary>
-
-<br/>
-
-<div align="center">
-<table>
-  <tr>
-    <td align="center">
-      <img src="screenshots/desktop/home.jpg" width="400" alt="Desktop Home"/>
-      <br/><b>Home Screen</b>
-    </td>
-    <td align="center">
-      <img src="screenshots/desktop/details.jpg" width="400" alt="Desktop Details"/>
-      <br/><b>Anime Details</b>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="screenshots/desktop/stream.jpg" width="400" alt="Desktop Player"/>
-      <br/><b>Video Player</b>
-    </td>
-    <td align="center">
-      <img src="screenshots/desktop/anilist.jpg" width="400" alt="Desktop AniList"/>
-      <br/><b>AniList Integration</b>
-    </td>
-  </tr>
-</table>
-</div>
-
-</details>
-
----
-
-## Installation
+Pre-built binaries are automatically compiled and published through GitHub Actions:
 
 ### 📱 Android
-Download the latest `.apk` from the [GitHub Releases](https://github.com/roshancodespace/ShonenX/releases) page.
+Download the latest `.apk` from **[GitHub Releases](https://github.com/Zcross091/KuroX/releases)**:
+- **`KuroX-...-android-universal.apk`**: Recommended for all phones, tablets, and Android TV sideloading.
+- **`KuroX-...-android-arm64-v8a.apk`**: Optimized for modern 64-bit Android smartphones.
 
 ### 🪟 Windows
-Download the `Windows-Portable.zip` or the `.exe` installer from the [Releases](https://github.com/roshancodespace/ShonenX/releases) page.
+- **`KuroX-...-windows-setup.exe`**: Inno Setup installer.
+- **`KuroX-...-windows-portable.zip`**: Zero-install standalone archive.
 
-### 🐧 Linux (Universal Install Script)
-We provide a universal interactive installation script for Linux users. It will fetch the latest release, extract it, set up the desktop icon, and add it to your PATH automatically.
+### 🐧 Linux
+- **`KuroX-...-linux-x86_64.tar.gz`**: Standalone Linux bundle.
 
-Run the following command in your terminal:
+---
+
+## 🛠️ Building From Source
+
+**Prerequisites**: Flutter SDK ≥ 3.8.1, Git
+
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/roshancodespace/ShonenX/main/install.sh)"
-```
-*Note: You can run this same command again to uninstall ShonenX safely!*
+# Clone the repository
+git clone https://github.com/Zcross091/KuroX.git
+cd KuroX
 
-### 🛠️ Build from Source
-**Prerequisites**: Flutter SDK ≥3.8.1, Git
-```bash
-git clone https://github.com/roshancodespace/ShonenX.git
-cd ShonenX
+# Fetch dependencies
 flutter pub get
-flutter pub run build_runner build --delete-conflicting-outputs
-flutter run # Select your device/platform
+
+# Run on your desktop or connected device
+flutter run
 ```
 
 ---
 
-## Legal & DMCA Disclaimer
+## 👥 Contributors
 
-Please read this before complaining.
+Contributions are welcome! If you contribute code, bug fixes, or documentation, your name and avatar will be automatically updated here.
 
-**01. Service Nature**  
-Look, ShonenX does not host, upload, or own any of the media you see in the app. It's literally just a frontend client. It's a glorified web browser that makes stuff look pretty. We don't have servers full of anime.
-
-**02. APIs & Metadata**  
-The covers, synopses, and schedules you see? That's all pulled directly from public APIs like AniList, MyAnimeList, and Kitsu. ShonenX just displays what they send back. Don't sue us for showing a picture of Goku.
-
-**03. User Extensions & Content**  
-Any "extensions" or third-party sources you decide to install are entirely on you. ShonenX doesn't distribute copyrighted material or endorse piracy. If you put in a weird URL and watch something you shouldn't, that's your problem, not ours. Make sure you follow your local laws, we are not your lawyers.
-
-If you're a copyright holder looking to DMCA someone, you're barking up the wrong tree. Go find the extension developers or whoever is actually hosting the video files.
-
----
-
-## Contributing & Documentation
-
-Contributions are welcome! Feel free to inspect the code, compile from source, open an issue, or contribute if you understand the architecture.
-
----
-
-## Contributors
-
-Thanks to everyone who has contributed to ShonenX!
-
-<a href="https://github.com/Zcross091">
-  <img src="https://images.weserv.nl/?url=github.com/Zcross091.png&w=64&h=64&mask=circle" width="64" height="64" alt="Zcross091" />
+<a href="https://github.com/Zcross091/KuroX/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Zcross091/KuroX" alt="KuroX Contributors" />
 </a>
 
-<a href="https://github.com/roshancodespace/ShonenX/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=roshancodespace/ShonenX" />
-</a>
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->
 
 ---
 
-## Support
+## ⚖️ Legal & DMCA Disclaimer
 
-**Developer**: Roshan Kumar Sharma  
-**GitHub**: [@roshancodespace](https://github.com/roshancodespace)  
-**Buy Me a Coffee**: [roshan.codespace](https://www.buymeacoffee.com/roshan.codespace)  
-**Email**: roshan.codespace@gmail.com  
-**Discord**: [Join Community](https://discord.gg/uJyXZYSmH4)  
-**License**: GPL-3.0 (See [LICENSE](LICENSE) file)
+KuroX is purely a client application and does not host, upload, or own any media or video content. All metadata, synopses, and covers are fetched from public APIs (AniList, MyAnimeList, Simkl). All media links are resolved client-side from publicly available web sources.
 
 ---
 
 <div align="center">
 
-### ⭐ Don't forget to star this repo!
+**Developed with ❤️ by [Zcross091](https://github.com/Zcross091)**
 
-**Public Contribution from the community for the community**
+⭐ Star the project on GitHub to support active development!
 
 </div>

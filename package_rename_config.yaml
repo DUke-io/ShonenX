@@ -1,31 +1,31 @@
 package_rename_config-production:
   android:
-    app_name: "ShonenX"
-    package_name: "com.roshancodespace.shonenx"
+    app_name: "KuroX"
+    package_name: "com.zcross.kurox"
 
   linux:
-    app_name: "ShonenX"
-    package_name: "com.roshancodespace.shonenx"
-    exe_name: "shonenx"
+    app_name: "KuroX"
+    package_name: "com.zcross.kurox"
+    exe_name: "kurox"
 
   windows:
-    app_name: "ShonenX"
-    organization: "roshancodespace"
+    app_name: "KuroX"
+    organization: "zcross091"
     copyright_notice: "Copyright © 2026"
-    exe_name: "shonenx"
+    exe_name: "kurox"
 
 package_rename_config-development:
   android:
-    app_name: "ShonenX Dev"
-    package_name: "com.roshancodespace.shonenx.dev"
+    app_name: "KuroX Dev"
+    package_name: "com.zcross.kurox.dev"
 
   linux:
-    app_name: "ShonenX Dev"
-    package_name: "com.roshancodespace.shonenx.dev"
-    exe_name: "shonenx-dev"
+    app_name: "KuroX Dev"
+    package_name: "com.zcross.kurox.dev"
+    exe_name: "kurox-dev"
 
   windows:
-    app_name: "ShonenX Dev"
-    organization: "roshancodespace"
+    app_name: "KuroX Dev"
+    organization: "zcross091"
     copyright_notice: "Copyright © 2026"
-    exe_name: "shonenx-dev"
+    exe_name: "kurox-dev"

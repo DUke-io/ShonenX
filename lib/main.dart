@@ -156,7 +156,7 @@ class ShonenXApp extends ConsumerWidget {
 
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
-          title: 'ShonenX',
+          title: 'KuroX',
           themeMode: themePrefs.themeMode,
           theme: lightTheme,
           darkTheme: darkTheme,

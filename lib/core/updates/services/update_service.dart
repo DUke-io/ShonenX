@@ -105,7 +105,7 @@ class UpdateService {
         Uri.parse(apiUrl),
         headers: {
           'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'ShonenX-App',
+          'User-Agent': 'KuroX-App',
         },
       );
 

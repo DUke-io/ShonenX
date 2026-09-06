@@ -1,7 +1,10 @@
 // ignore_for_file: non_constant_identifier_names, constant_identifier_names
 
 class Env {
-  static const RELEASE_REPO = String.fromEnvironment('RELEASE_REPO');
+  static const RELEASE_REPO = String.fromEnvironment(
+    'RELEASE_REPO',
+    defaultValue: 'Zcross091/KuroX',
+  );
 
   static const COMMENTUM_API_URL = String.fromEnvironment('COMMENTUM_API_URL');
 

@@ -29,7 +29,7 @@
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
     <application
-        android:label="ShonenX"
+        android:label="KuroX"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         
@@ -120,11 +120,12 @@
             android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
             android:exported="true"
             android:taskAffinity="">
-            <intent-filter android:label="ShonenX">
+            <intent-filter android:label="KuroX">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="shonenx" />
+                <data android:scheme="kurox" />
             </intent-filter>
         </activity>
 

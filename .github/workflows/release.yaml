@@ -180,11 +180,11 @@ jobs:
           EOF
           else
             echo "No custom keystore provided. Generating a release keystore for CI signing..."
-            keytool -genkey -v -keystore android/app/upload-keystore.jks -alias shonenx -keyalg RSA -keysize 2048 -validity 10000 -storepass shonenxpass -keypass shonenxpass -dname "CN=ShonenX, OU=Development, O=ShonenX, L=Unknown, S=Unknown, C=US"
+            keytool -genkey -v -keystore android/app/upload-keystore.jks -alias kurox -keyalg RSA -keysize 2048 -validity 10000 -storepass kuroxpass -keypass kuroxpass -dname "CN=KuroX, OU=Development, O=KuroX, L=Unknown, S=Unknown, C=US"
             cat > android/key.properties <<EOF
-          storePassword=shonenxpass
-          keyPassword=shonenxpass
-          keyAlias=shonenx
+          storePassword=kuroxpass
+          keyPassword=kuroxpass
+          keyAlias=kurox
           storeFile=upload-keystore.jks
           EOF
           fi
@@ -224,18 +224,18 @@ jobs:
           
           # Universal APK (Ideal for Android TV sideloading & generic devices)
           if [ -f build/app/outputs/flutter-apk/app-release.apk ]; then
-            cp build/app/outputs/flutter-apk/app-release.apk "output-apks/ShonenX-${TAG}-android-universal.apk"
+            cp build/app/outputs/flutter-apk/app-release.apk "output-apks/KuroX-${TAG}-android-universal.apk"
           fi
           
           # Architecture-specific APKs
           if [ -f build/app/outputs/flutter-apk/app-arm64-v8a-release.apk ]; then
-            cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "output-apks/ShonenX-${TAG}-android-arm64-v8a.apk"
+            cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "output-apks/KuroX-${TAG}-android-arm64-v8a.apk"
           fi
           if [ -f build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk ]; then
-            cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "output-apks/ShonenX-${TAG}-android-armeabi-v7a.apk"
+            cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "output-apks/KuroX-${TAG}-android-armeabi-v7a.apk"
           fi
           if [ -f build/app/outputs/flutter-apk/app-x86_64-release.apk ]; then
-            cp build/app/outputs/flutter-apk/app-x86_64-release.apk "output-apks/ShonenX-${TAG}-android-x86_64.apk"
+            cp build/app/outputs/flutter-apk/app-x86_64-release.apk "output-apks/KuroX-${TAG}-android-x86_64.apk"
           fi
 
           ls -lah output-apks/
@@ -327,8 +327,8 @@ jobs:
           TAG="${{ needs.resolve-release-tag.outputs.tag_name }}"
           mkdir -p output-linux
           cd build/linux/x64/release/bundle
-          zip -r "../../../../../output-linux/ShonenX-${TAG}-linux-x86_64.zip" .
-          tar -czvf "../../../../../output-linux/ShonenX-${TAG}-linux-x86_64.tar.gz" .
+          zip -r "../../../../../output-linux/KuroX-${TAG}-linux-x86_64.zip" .
+          tar -czvf "../../../../../output-linux/KuroX-${TAG}-linux-x86_64.tar.gz" .
           cd ../../../../../
           ls -lah output-linux/
 
@@ -422,13 +422,13 @@ jobs:
           
           # Installer .exe
           if compgen -G "build/windows/x64/installer/Release/*.exe" > /dev/null; then
-            cp build/windows/x64/installer/Release/*.exe "output-windows/ShonenX-${TAG}-windows-setup.exe"
+            cp build/windows/x64/installer/Release/*.exe "output-windows/KuroX-${TAG}-windows-setup.exe"
           fi
           
           # Portable .zip
           if [ -d "build/windows/x64/runner/Release" ]; then
             cd build/windows/x64/runner/Release
-            7z a "../../../../../output-windows/ShonenX-${TAG}-windows-portable.zip" .
+            7z a "../../../../../output-windows/KuroX-${TAG}-windows-portable.zip" .
             cd ../../../../../
           fi
 
@@ -527,7 +527,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.resolve-release-tag.outputs.tag_name }}
-          name: ${{ needs.resolve-release-tag.outputs.tag_name }}
+          name: KuroX ${{ needs.resolve-release-tag.outputs.tag_name }}
           prerelease: ${{ needs.resolve-release-tag.outputs.is_prerelease == 'true' }}
           body_path: release_notes.md
           files: release-artifacts/*
