@@ -1,0 +1,129 @@
+name: Commit Notification
+
+on:
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - "v*"
+
+jobs:
+  notify-discord:
+    name: Notify Discord on New Commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Send Discord Commit Notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          COMMIT_SHA: ${{ github.sha }}
+          REF_NAME: ${{ github.ref_name }}
+          REPO_NAME: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${DISCORD_WEBHOOK:-}" ]; then
+            echo "DISCORD_WEBHOOK secret is not set, skipping notification."
+            exit 0
+          fi
+
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          COMMIT_URL="https://github.com/${REPO_NAME}/commit/${COMMIT_SHA}"
+          REPO_URL="https://github.com/${REPO_NAME}"
+
+          # Extract commit details from git log
+          AUTHOR_NAME=$(git log -1 --format='%an')
+          AUTHOR_EMAIL=$(git log -1 --format='%ae')
+          RAW_MSG=$(git log -1 --format='%B')
+          FIRST_LINE=$(git log -1 --format='%s')
+          BODY=$(git log -1 --format='%b')
+
+          # Changed files summary
+          CHANGED_FILES=$(git diff-tree --no-commit-id --name-status -r "$COMMIT_SHA" | head -n 12)
+          TOTAL_CHANGED=$(git diff-tree --no-commit-id --name-only -r "$COMMIT_SHA" | wc -l)
+
+          FILES_TEXT=""
+          if [ -n "$CHANGED_FILES" ]; then
+            FILES_TEXT=$(echo "$CHANGED_FILES" | awk '{print "`" $1 "` " $2}')
+            if [ "$TOTAL_CHANGED" -gt 12 ]; then
+              EXTRA=$((TOTAL_CHANGED - 12))
+              FILES_TEXT="${FILES_TEXT}"$'\n'"*...and ${EXTRA} more files*"
+            fi
+          fi
+
+          # Format description
+          DESC="**${FIRST_LINE}**"
+          if [ -n "$BODY" ]; then
+            DESC="${DESC}"$'\n\n'"${BODY}"
+          fi
+
+          # Truncate description if too long for Discord embed (limit 4000)
+          if [ "${#DESC}" -gt 1500 ]; then
+            DESC="${DESC:0:1500}..."
+          fi
+
+          APP_ICON="https://raw.githubusercontent.com/${REPO_NAME}/main/assets/images/app_icon.png"
+
+          # Prepare JSON payload with jq
+          PAYLOAD=$(jq -n \
+            --arg author_name "$AUTHOR_NAME" \
+            --arg title "✨ New Feature / Commit on KuroX" \
+            --arg url "$COMMIT_URL" \
+            --arg desc "$DESC" \
+            --arg files "$FILES_TEXT" \
+            --arg repo_name "$REPO_NAME" \
+            --arg repo_url "$REPO_URL" \
+            --arg branch "$REF_NAME" \
+            --arg short_sha "$SHORT_SHA" \
+            --arg app_icon "$APP_ICON" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{
+              username: "KuroX Bot",
+              avatar_url: $app_icon,
+              embeds: [{
+                author: {
+                  name: ($author_name + " pushed to " + $branch),
+                  url: $url,
+                  icon_url: $app_icon
+                },
+                title: $title,
+                url: $url,
+                description: $desc,
+                color: 7101415,
+                fields: [
+                  {
+                    name: "🌿 Branch",
+                    value: ("`" + $branch + "`"),
+                    inline: true
+                  },
+                  {
+                    name: "🔗 Commit",
+                    value: ("[`" + $short_sha + "`](" + $url + ")"),
+                    inline: true
+                  },
+                  {
+                    name: "📦 Repository",
+                    value: ("[" + $repo_name + "](" + $repo_url + ")"),
+                    inline: true
+                  },
+                  (if ($files | length) > 0 then {
+                    name: "📁 Changed Files",
+                    value: $files,
+                    inline: false
+                  } else empty end)
+                ],
+                footer: {
+                  text: "KuroX Development • GitHub Actions",
+                  icon_url: $app_icon
+                },
+                timestamp: $timestamp
+              }]
+            }')
+
+          echo "Sending notification to Discord webhook..."
+          curl -s -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK"
+          echo "Notification sent successfully!"
