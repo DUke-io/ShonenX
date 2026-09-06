@@ -1,7 +1,7 @@
 name: shonenx
-description: "Minimal yet feature-rich Anime/Manga Client"
+description: "Next-Gen Anime & Manga Client with native streaming and multi-tracker sync"
 publish_to: "none"
-version: 2.1.2+4
+version: 2.1.4+1
 
 environment:
   sdk: ^3.9.2
