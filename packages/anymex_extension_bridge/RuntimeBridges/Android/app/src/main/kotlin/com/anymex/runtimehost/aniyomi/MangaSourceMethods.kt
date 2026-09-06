@@ -1,0 +1,268 @@
+package com.anymex.runtimehost.aniyomi
+
+import com.anymex.runtimehost.Logger
+import eu.kanade.tachiyomi.PreferenceScreen
+import eu.kanade.tachiyomi.animesource.model.AnimeUpdateStrategy
+import eu.kanade.tachiyomi.animesource.model.AnimesPage
+import eu.kanade.tachiyomi.animesource.model.FetchType
+import eu.kanade.tachiyomi.animesource.model.SAnime
+import eu.kanade.tachiyomi.animesource.model.SEpisode
+import eu.kanade.tachiyomi.animesource.model.Video
+import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.ConfigurableSource
+import eu.kanade.tachiyomi.source.model.FilterList
+import eu.kanade.tachiyomi.source.model.MangasPage
+import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.source.model.SChapter
+import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import eu.kanade.tachiyomi.source.online.HttpSource
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+import eu.kanade.tachiyomi.network.normalizeUrl
+
+@Suppress("PrivatePropertyName")
+class MangaSourceMethods(sourceID: String, langIndex: Int = 0) : AniyomiSourceMethods {
+
+    val source: CatalogueSource
+
+    init {
+        val manager = Injekt.get<AniyomiExtensionManager>()
+
+        val src = manager.installedMangaExtensions
+            .asSequence()
+            .flatMap { it.sources.asSequence() }
+            .firstOrNull { it.id.toString() == sourceID }
+            ?: throw IllegalArgumentException("Manga source with ID '$sourceID' not found.")
+
+        source = src as? HttpSource
+            ?: src as? CatalogueSource
+                    ?: throw IllegalArgumentException(
+                "Source with ID '$sourceID' is not an HttpSource or CatalogueSource"
+            )
+    }
+
+    override var baseUrl = (source as? HttpSource)?.baseUrl
+    override var parameters: Map<String, Any?>? = null
+
+    override suspend fun getPopular(page: Int): AnimesPage {
+        return mangaPageToAnimePage(source.getPopularManga(page))
+    }
+
+    override suspend fun getLatestUpdates(page: Int): AnimesPage {
+        return mangaPageToAnimePage(source.getLatestUpdates(page))
+    }
+
+    override suspend fun getSearchResults(query: String, page: Int): AnimesPage {
+        val filterList = source.getFilterList()
+        @Suppress("UNCHECKED_CAST")
+        val filtersData = parameters?.get("filters") as? List<Map<String, Any?>>
+        if (filtersData != null) {
+            applyMangaFilters(filterList, filtersData)
+        }
+        return mangaPageToAnimePage(
+            source.getSearchManga(
+                page = page,
+                query = query,
+                filters = filterList
+            )
+        )
+    }
+
+    private fun applyMangaFilters(filterList: eu.kanade.tachiyomi.source.model.FilterList, filtersData: List<Map<String, Any?>>) {
+        for (i in 0 until minOf(filterList.list.size, filtersData.size)) {
+            val filter = filterList.list[i]
+            val data = filtersData[i]
+            val state = data["state"]
+            if (state != null) {
+                applyMangaFilterState(filter, state)
+            }
+        }
+    }
+
+    private fun applyMangaFilterState(filter: eu.kanade.tachiyomi.source.model.Filter<*>, state: Any?) {
+        when (filter) {
+            is eu.kanade.tachiyomi.source.model.Filter.CheckBox -> {
+                if (state is Boolean) filter.state = state
+            }
+            is eu.kanade.tachiyomi.source.model.Filter.TriState -> {
+                if (state is Number) filter.state = state.toInt()
+            }
+            is eu.kanade.tachiyomi.source.model.Filter.Select<*> -> {
+                if (state is Number) filter.state = state.toInt()
+            }
+            is eu.kanade.tachiyomi.source.model.Filter.Text -> {
+                if (state is String) filter.state = state
+            }
+            is eu.kanade.tachiyomi.source.model.Filter.Sort -> {
+                if (state is Map<*, *>) {
+                    val index = (state["index"] as? Number)?.toInt() ?: filter.state?.index ?: 0
+                    val ascending = (state["ascending"] as? Boolean) ?: filter.state?.ascending ?: true
+                    filter.state = eu.kanade.tachiyomi.source.model.Filter.Sort.Selection(index, ascending)
+                }
+            }
+            is eu.kanade.tachiyomi.source.model.Filter.Group<*> -> {
+                if (state is List<*>) {
+                    val subFilters = filter.state
+                    for (j in 0 until minOf(subFilters.size, state.size)) {
+                        val subFilter = subFilters[j] as? eu.kanade.tachiyomi.source.model.Filter<*>
+                        val subState = (state[j] as? Map<*, *>)?.get("state")
+                        if (subFilter != null && subState != null) {
+                            applyMangaFilterState(subFilter, subState)
+                        }
+                    }
+                }
+            }
+            else -> {}
+        }
+    }
+
+    override suspend fun getDetails(media: SAnime): SAnime {
+        val smanga = media.toSManga()
+        try {
+            val details = try {
+                source.getMangaDetails(smanga)
+            } catch (e: Throwable) {
+                if (e is UnsupportedOperationException || e is IllegalStateException) {
+                    val update = source.getMangaUpdate(smanga, emptyList(), fetchDetails = true, fetchChapters = false)
+                    update.manga
+                } else {
+                    throw e
+                }
+            }
+            return details.toSAnime(smanga.url)
+        } catch (e: Throwable) {
+            Logger.log("getDetails failed: message=${e.message}")
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    override suspend fun getChapterList(media: SAnime): List<SEpisode> {
+        val smanga = media.toSManga()
+        return try {
+            source.getChapterList(smanga).map { it.toSEpisode() }
+        } catch (e: Throwable) {
+            if (e is UnsupportedOperationException || e is IllegalStateException) {
+                val update = source.getMangaUpdate(smanga, emptyList(), fetchDetails = false, fetchChapters = true)
+                update.chapters.map { it.toSEpisode() }
+            } else {
+                throw e
+            }
+        }
+    }
+
+    override suspend fun getPageList( chapter: SChapter): List<Page> {
+       return (source).getPageList(chapter)
+    }
+
+    override fun setupPreferenceScreen(screen: PreferenceScreen) {
+        if (source is ConfigurableSource) {
+            source.setupPreferenceScreen(screen)
+        } else {
+            throw NoPreferenceScreenException("This source does not support preferences.")
+        }
+    }
+
+    override suspend fun getEpisodeList(media: SAnime): List<SEpisode> {
+        throw UnsupportedOperationException()
+    }
+
+    override suspend fun getVideoList(episode: SEpisode): List<Video> {
+        throw UnsupportedOperationException()
+    }
+
+
+    private fun mangaPageToAnimePage(mangaPage: MangasPage): AnimesPage {
+        return AnimesPage(
+            mangaPage.mangas.map { it.toSAnime() },
+            mangaPage.hasNextPage
+        )
+    }
+    fun SChapter.toSEpisode(): SEpisode {
+        val chapter = this
+        return object : SEpisode {
+            override var url: String = chapter.url
+            override var name: String = chapter.name
+            override var date_upload: Long = chapter.date_upload
+            override var episode_number: Float = if (chapter.chapter_number >= 0f) chapter.chapter_number else findChapterNumber(chapter.name) ?: chapter.chapter_number
+            override var fillermark: Boolean = false
+            override var scanlator: String? = chapter.scanlator
+            override var summary: String?= null
+            override var preview_url: String? = null
+        }
+    }
+
+    fun SAnime.toSManga(): SManga {
+        val anime = this
+        return object : SManga {
+            override var url: String = anime.url
+            override var title: String = anime.title
+            override var artist: String? = anime.artist
+            override var author: String? = anime.author
+            override var description: String? = anime.description
+            override var genre: String? = anime.genre
+            override var status: Int = anime.status
+            override var thumbnail_url: String? = anime.thumbnail_url?.takeIf { it.isNotBlank() }?.normalizeUrl()
+            override var update_strategy: UpdateStrategy = UpdateStrategy.ALWAYS_UPDATE
+            override var initialized: Boolean = anime.initialized
+        }
+    }
+
+    fun SManga.toSAnime(fallbackUrl: String? = null): SAnime {
+        val manga = this
+
+        return object : SAnime {
+            override var url: String = runCatching { manga.url }.getOrNull()?.takeIf { it.isNotBlank() }
+                ?: fallbackUrl
+                ?: ""
+
+            override var title: String = runCatching { manga.title }.getOrElse {
+                ""
+            }
+
+            override var artist: String? = runCatching { manga.artist }.getOrNull()
+            override var author: String? = runCatching { manga.author }.getOrNull()
+            override var description: String? = runCatching { manga.description }.getOrNull()
+            override var genre: String? = runCatching { manga.genre }.getOrNull()
+            override var status: Int = runCatching { manga.status }.getOrDefault(SAnime.UNKNOWN)
+            override var thumbnail_url: String? = runCatching { manga.thumbnail_url }.getOrNull()?.takeIf { it.isNotBlank() }?.normalizeUrl()
+            override var background_url: String? = null
+            override var update_strategy: AnimeUpdateStrategy =
+                runCatching { AnimeUpdateStrategy.ALWAYS_UPDATE }.getOrDefault(AnimeUpdateStrategy.ALWAYS_UPDATE)
+            override var fetch_type: FetchType = runCatching { FetchType.Episodes }.getOrDefault(FetchType.Episodes)
+            override var season_number: Double = runCatching { 1.0 }.getOrDefault(0.0)
+            override var initialized: Boolean = runCatching { manga.initialized }.getOrDefault(false)
+        }
+    }
+    private fun safeTitle(manga: SManga): String =
+        runCatching { manga.title }.getOrElse { "[UNINITIALIZED_TITLE]" }
+
+    private fun safeUrl(manga: SManga): String =
+        runCatching { manga.url }.getOrElse { "[UNINITIALIZED_URL]" }
+    private val REGEX_ITEM = "[\\s:.\\-]*(\\d+\\.?\\d*)[\\s:.\\-]*"
+    private val REGEX_PART_NUMBER = "(?<!part\\s)\\b(\\d+)\\b"
+    private val REGEX_CHAPTER = "(chapter|chap|ch|c)${REGEX_ITEM}"
+    fun findChapterNumber(text: String): Float? {
+        val pattern: Pattern = Pattern.compile(REGEX_CHAPTER, Pattern.CASE_INSENSITIVE)
+        val matcher: Matcher = pattern.matcher(text)
+
+        return if (matcher.find()) {
+            matcher.group(2)?.toFloat()
+        } else {
+            val failedChapterNumberPattern: Pattern =
+                Pattern.compile(REGEX_PART_NUMBER, Pattern.CASE_INSENSITIVE)
+            val failedChapterNumberMatcher: Matcher =
+                failedChapterNumberPattern.matcher(text)
+            if (failedChapterNumberMatcher.find()) {
+                failedChapterNumberMatcher.group(1)?.toFloat()
+            } else {
+                text.toFloatOrNull()
+            }
+        }
+    }
+
+    override fun getHttpSource(): Any? = source as? HttpSource
+}

@@ -1,0 +1,535 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:collection/collection.dart';
+import '../Aniyomi/PbDecoder.dart';
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+
+import '../../Logger.dart';
+import '../../Settings/KvStore.dart';
+import '../../Models/Source.dart';
+import '../../Extensions/Extensions.dart';
+import '../../Extensions/SourceMethods.dart';
+import '../../Runtime/RuntimeController.dart';
+import '../../Runtime/Bridge/BridgeDispatcher.dart';
+import '../../Runtime/DesktopExtensionBase.dart';
+import 'package:get/get.dart';
+import '../Aniyomi/Models/Source.dart';
+import '../Mangayomi/http/m_client.dart';
+import 'DesktopAniyomiSourceMethods.dart';
+
+class DesktopAniyomiExtensions extends DesktopExtensionBase {
+  final _client = MClient.init();
+
+  @override
+  String get id => 'aniyomi-desktop';
+
+  @override
+  String get name => 'Aniyomi (Desktop)';
+
+  @override
+  bool get supportsNovel => false;
+
+  @override
+  bool get requiresPlugin => true;
+
+  @override
+  SourceMethods createSourceMethods(Source source) =>
+      DesktopAniyomiSourceMethods(source);
+
+  Future<String> _getExtensionsPath() async {
+    return getExtensionsPath('Aniyomi');
+  }
+
+  Future<String> _getToolsPath() async {
+    return getToolsPath();
+  }
+
+  @override
+  Future<void> fetchInstalledAnimeExtensions() async {
+    final list = await _loadInstalled(ItemType.anime);
+    getInstalledRx(ItemType.anime).value = list;
+    final available = getRawAvailableRx(ItemType.anime).value.whereType<ASource>().toList();
+    if (available.isNotEmpty) {
+      _detectUpdates(available, ItemType.anime);
+    }
+  }
+
+  @override
+  Future<void> fetchInstalledMangaExtensions() async {
+    final list = await _loadInstalled(ItemType.manga);
+    getInstalledRx(ItemType.manga).value = list;
+    final available = getRawAvailableRx(ItemType.manga).value.whereType<ASource>().toList();
+    if (available.isNotEmpty) {
+      _detectUpdates(available, ItemType.manga);
+    }
+  }
+
+  @override
+  Future<void> fetchInstalledNovelExtensions() async {}
+
+  Future<List<Source>> _loadInstalled(ItemType type) async {
+    try {
+      final extPath = await _getExtensionsPath();
+      final result = await BridgeDispatcher().invokeMethod('loadExtensions', {
+        'folderPath': extPath,
+      });
+
+      final parsed = <ASource>[];
+
+      for (final e in (result as List)) {
+        final map = e as Map<String, dynamic>;
+        final detectedType =
+            map['type'] == 'anime' ? ItemType.anime : ItemType.manga;
+        if (detectedType != type) continue;
+
+        final className = map['className'] as String;
+        final pkgName = (map['pkgName'] as String?)?.isNotEmpty == true
+            ? map['pkgName'] as String
+            : (className.contains('.')
+                ? className.substring(0, className.lastIndexOf('.'))
+                : className);
+        final iconUrl = getVal<String>('desktop_ext_icon_$pkgName') ??
+            'https://aniyomi.org/img/logo-128px.png';
+        final savedVersion = getVal<String>('desktop_ext_version_$pkgName');
+        final version = savedVersion ?? map['version'] as String? ?? '1.0.0';
+
+        final aSource = ASource(
+          id: map['id']?.toString() ?? className,
+          name: map['name'] as String?,
+          lang: map['lang'] as String?,
+          pkgName: pkgName,
+          version: version,
+          isNsfw: map['isNsfw'] as bool? ?? false,
+          baseUrl: map['baseUrl'] as String?,
+          itemType: detectedType,
+          iconUrl: iconUrl,
+        );
+        aSource.managerId = id;
+
+        parsed.add(aSource);
+      }
+
+      return parsed;
+    } catch (e) {
+      Logger.log('Failed to load desktop extensions: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<void> fetchAnimeExtensions() async {
+    final res = await _fetchExtensions(ItemType.anime);
+    getAvailableRx(ItemType.anime).value = res;
+  }
+
+  @override
+  Future<void> fetchMangaExtensions() async {
+    final res = await _fetchExtensions(ItemType.manga);
+    getAvailableRx(ItemType.manga).value = res;
+  }
+
+  @override
+  Future<void> fetchNovelExtensions() async {}
+
+  Future<List<Source>> _fetchExtensions(ItemType type) async {
+    final repos = _loadRepos(type);
+    if (repos.isEmpty) return const [];
+
+    getReposRx(type).value = repos;
+
+    final results = await Future.wait(repos.map((r) => _fetchRepo(r, type)));
+    final all = results.expand((e) => e).toList(growable: false);
+
+    final installed = getInstalledRx(type).value;
+    final installedIds = installed.map((e) => e.id).toSet();
+
+    _detectUpdates(all.whereType<ASource>().toList(), type);
+
+    getRawAvailableRx(type).value = List.unmodifiable(all);
+
+    return List.unmodifiable(
+      all.where((s) => !installedIds.contains(s.id)),
+    );
+  }
+
+  Future<List<Source>> _fetchRepo(Repo repo, ItemType type) async {
+    try {
+      final res = await _client.get(Uri.parse(repo.url));
+      if (res.statusCode != 200) return const [];
+      return compute(_parseExtensions, (res.bodyBytes, repo.url, type));
+    } catch (e) {
+      Logger.log("Repo failed ${repo.url}: $e");
+      return const [];
+    }
+  }
+
+  static List<Source> _parseExtensions(
+    (Uint8List bodyBytes, String repoUrl, ItemType itemType) args,
+  ) {
+    final (bodyBytes, repoUrl, targetType) = args;
+
+    try {
+      var bytes = bodyBytes as List<int>;
+      if (bytes.length >= 2 && bytes[0] == 0x1F && bytes[1] == 0x8B) {
+        try {
+          bytes = gzip.decode(bytes);
+        } catch (e) {
+          Logger.log("Failed to decompress gzip repo index: $e");
+        }
+      }
+
+      final isJson = bytes.isNotEmpty && (bytes[0] == 0x7B || bytes[0] == 0x5B);
+      final List<dynamic> decoded;
+      if (isJson) {
+        final body = utf8.decode(bytes);
+        final parsed = jsonDecode(body);
+        if (parsed is! List) return const [];
+        decoded = parsed;
+      } else {
+        decoded = PbDecoder.decodeIndex(bytes);
+      }
+
+      final baseIconUrl = repoUrl
+          .replaceAll('/index.min.json', '')
+          .replaceAll('/index.pb.gz', '')
+          .replaceAll('/index.pb', '');
+      final sources = <Source>[];
+
+      for (final item in decoded) {
+        final map = item as Map<String, dynamic>;
+        final name = map['name'] as String? ?? '';
+        final pkg = map['pkg'] as String? ?? '';
+
+        var detectedType = name.startsWith('Aniyomi: ')
+            ? ItemType.anime
+            : name.startsWith('Tachiyomi: ')
+                ? ItemType.manga
+                : null;
+
+        if (detectedType == null) {
+          if (pkg.contains('.anime.')) {
+            detectedType = ItemType.anime;
+          } else if (pkg.contains('.manga.')) {
+            detectedType = ItemType.manga;
+          } else {
+            detectedType = targetType;
+          }
+        }
+
+        if (detectedType != targetType) continue;
+
+        final rawIconUrl = map['iconUrl'] as String? ?? '';
+        final rawApkUrl = map['apkUrl'] as String? ?? '';
+
+        sources.add(
+          ASource(
+            id: map["sources"] != null &&
+                    map["sources"] is List &&
+                    (map["sources"] as List).isNotEmpty
+                ? (map["sources"] as List).first['id']?.toString() ?? ''
+                : '',
+            name: name.startsWith('Aniyomi: ')
+                ? name.substring(9)
+                : name.startsWith('Tachiyomi: ')
+                    ? name.substring(10)
+                    : name,
+            pkgName: map['pkg'],
+            apkName: rawApkUrl.startsWith('http') ? rawApkUrl : map['apk'],
+            lang: map['lang'],
+            version: map['version'],
+            isNsfw: map['isNsfw'] ?? false,
+            itemType: detectedType,
+            repo: repoUrl,
+            iconUrl: rawIconUrl.startsWith('http')
+                ? rawIconUrl
+                : "$baseIconUrl/icon/${map['pkg']}.png",
+          ),
+        );
+      }
+
+      final Map<String, List<ASource>> grouped = {};
+      for (final s in sources) {
+        final key = (s as ASource).pkgName ?? s.name ?? "unknown";
+        grouped.putIfAbsent(key, () => []).add(s);
+      }
+
+      final filtered = <ASource>[];
+      for (final group in grouped.values) {
+        if (group.length > 1) {
+          final allSource = group.firstWhere((s) => s.lang == 'all',
+              orElse: () => group.firstWhere((s) => s.lang == 'en',
+                  orElse: () => group.first));
+          for (final s in group) {
+            s.langs = group;
+          }
+          filtered.add(allSource);
+        } else {
+          filtered.add(group.first);
+        }
+      }
+
+      return List.unmodifiable(filtered);
+    } catch (e) {
+      debugPrint(
+          "AnymeXExtensionBridge: [Desktop Source] Failed to parse extensions from $repoUrl: $e");
+      return const [];
+    }
+  }
+
+  void _detectUpdates(List<ASource> available, ItemType type) {
+    final installed = getInstalledRx(type).value.whereType<ASource>().toList();
+
+    bool changed = false;
+
+    for (var i = 0; i < installed.length; i++) {
+      final inst = installed[i];
+      final repo = available.firstWhereOrNull((s) {
+        if (inst.pkgName != null && inst.pkgName!.isNotEmpty) {
+          return s.pkgName == inst.pkgName;
+        }
+        return s.id == inst.id || s.name == inst.name;
+      });
+
+      if (repo == null) continue;
+
+      if (compareVersions(repo.version ?? "0", inst.version ?? "0") > 0) {
+        installed[i] = inst
+          ..hasUpdate = true
+          ..apkName = repo.apkName
+          ..iconUrl = repo.iconUrl
+          ..versionLast = repo.version;
+
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      getInstalledRx(type).value = List.unmodifiable(installed);
+    }
+  }
+
+  @override
+  Future<void> addRepo(String repoUrl, ItemType type) async {
+    try {
+      final uri = Uri.tryParse(repoUrl);
+      if (uri == null || !uri.hasScheme) {
+        throw Exception("Invalid repo URL");
+      }
+
+      final repos = _loadRepos(type);
+      if (repos.any((r) => r.url == repoUrl)) return;
+
+      final res = await _client.get(uri);
+      if (res.statusCode != 200) {
+        throw Exception("Failed to fetch repo");
+      }
+
+      final repo = Repo(url: repoUrl, managerId: id);
+      final updatedRepos = List<Repo>.from(repos)..add(repo);
+      _saveRepos(updatedRepos, type);
+
+      final parsed = await compute(
+        _parseExtensions,
+        (res.bodyBytes, repoUrl, type),
+      );
+
+      final rx = getAvailableRx(type);
+      final existing = rx.value;
+      final merged = {
+        for (final s in existing) s.id: s,
+        for (final s in parsed) s.id: s,
+      }.values.toList(growable: false);
+
+      rx.value = List.unmodifiable(merged);
+      getReposRx(type).value = updatedRepos;
+    } catch (e) {
+      Logger.log("Failed to add repo $repoUrl: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> removeRepo(String repoUrl, ItemType type) async {
+    try {
+      final repos = _loadRepos(type)
+          .where((r) => r.url != repoUrl)
+          .toList(growable: false);
+      _saveRepos(repos, type);
+
+      final rx = getAvailableRx(type);
+      rx.value = rx.value.where((s) => s.repo != repoUrl).toList();
+
+      getReposRx(type).value = repos;
+    } catch (e) {
+      Logger.log("Failed to remove repo $repoUrl: $e");
+    }
+  }
+
+  List<Repo> _loadRepos(ItemType type) {
+    final newKey = 'aniyomi${type.name}Repos';
+    final oldKey = 'aniyomi${type.name}ReposV2';
+
+    final encoded =
+        getVal<List<String>>(newKey) ?? getVal<List<String>>(oldKey);
+    if (encoded == null || encoded.isEmpty) return const [];
+
+    return encoded
+        .map((e) => Repo.fromJson(jsonDecode(e)))
+        .toSet()
+        .toList(growable: false);
+  }
+
+  void _saveRepos(List<Repo> repos, ItemType type) {
+    final key = 'aniyomi${type.name}Repos';
+    setVal(
+      key,
+      repos.toSet().map((e) => jsonEncode(e.toJson())).toList(growable: false),
+    );
+  }
+
+  @override
+  Future<void> installSource(Source source, {String? customPath}) async {
+    var aSource = source as ASource;
+    var process;
+    if (aSource.apkUrl == null || aSource.apkUrl!.isEmpty) {
+      final type = aSource.itemType ?? ItemType.anime;
+      final available = getAvailableRx(type).value.whereType<ASource>();
+      final repoMatch = available.firstWhereOrNull((s) =>
+          (s.pkgName != null && s.pkgName == aSource.pkgName) ||
+          s.id == aSource.id ||
+          s.name == aSource.name);
+      if (repoMatch != null) {
+        aSource.apkName = repoMatch.apkName;
+        aSource.iconUrl = repoMatch.iconUrl;
+        aSource.repo = repoMatch.repo;
+      }
+    }
+
+    if (aSource.apkUrl == null || aSource.apkUrl!.isEmpty) {
+      return Future.error('Source APK URL is required for installation.');
+    }
+
+    try {
+      final pkgName = aSource.pkgName ??
+          aSource.apkName?.replaceAll('.apk', '') ??
+          'unknown_ext';
+
+      final extDir = await _getExtensionsPath();
+      final tempZipPath = p.join(extDir, '$pkgName.zip');
+      final tempExtractedPath = p.join(extDir, '${pkgName}_extracted');
+
+      final apkRes = await _client.get(Uri.parse(aSource.apkUrl!));
+      if (apkRes.statusCode != 200) {
+        throw Exception(
+            'Failed to download extension APK: HTTP ${apkRes.statusCode}');
+      }
+      File(tempZipPath).writeAsBytesSync(apkRes.bodyBytes);
+
+      final outJarPath = p.join(extDir, '$pkgName.jar');
+      Logger.log("Converting Aniyomi APK to JAR via sidecar (embedded dex2jar)...");
+
+      // Delegate conversion to the sidecar which uses de.femtopedia.dex2jar library
+      // (same as Dartotsu) — produces correct bytecode for modern coroutine/lambda patterns
+      await BridgeDispatcher().invokeMethod('convertApk', {
+        'apkPath': tempZipPath,
+        'outJarPath': outJarPath,
+      });
+
+      if (aSource.iconUrl != null) {
+        setVal('desktop_ext_icon_$pkgName', aSource.iconUrl);
+      }
+      final versionToSave = aSource.hasUpdate == true ? aSource.versionLast : aSource.version;
+      if (versionToSave != null) {
+        setVal('desktop_ext_version_$pkgName', versionToSave);
+      }
+
+      try {
+        if (File(tempZipPath).existsSync()) File(tempZipPath).deleteSync();
+        if (Directory(tempExtractedPath).existsSync()) {
+          Directory(tempExtractedPath).deleteSync(recursive: true);
+        }
+      } catch (e) {
+        Logger.log('Cleanup warning: $e');
+      }
+
+      final avail = getAvailableRx(aSource.itemType!);
+      avail.value = avail.value.where((e) => e.id != aSource.id).toList();
+
+      if (aSource.itemType == ItemType.anime) {
+        await fetchInstalledAnimeExtensions();
+      } else {
+        await fetchInstalledMangaExtensions();
+      }
+    } catch (e) {
+      Logger.log('Error installing desktop source: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> uninstallSource(Source source) async {
+    final s = source as ASource;
+    final pkgName = s.pkgName;
+    if (pkgName == null || pkgName.isEmpty) {
+      throw Exception('Source ID required');
+    }
+
+    try {
+      try {
+        await BridgeDispatcher()
+            .invokeMethod('unloadExtension', {'sourceId': s.id});
+      } catch (e) {
+        Logger.log('Warning: Could not natively unload extension from JVM: $e');
+      }
+
+      final extPath = await _getExtensionsPath();
+      final jarPath = p.join(extPath, '$pkgName.jar');
+
+      if (File(jarPath).existsSync()) File(jarPath).deleteSync();
+      KvStore.remove('desktop_ext_icon_$pkgName');
+      KvStore.remove('desktop_ext_version_$pkgName');
+
+      final raw = getRawAvailableRx(s.itemType!).value;
+      final installed =
+          getInstalledRx(s.itemType!).value.where((e) => e.id != s.id).toList();
+      getInstalledRx(s.itemType!).value = installed;
+
+      final installedIds = installed.map((e) => e.id).toSet();
+      getAvailableRx(s.itemType!).value = List.unmodifiable(
+        raw.where((e) => !installedIds.contains(e.id)),
+      );
+
+      Logger.log('Successfully uninstalled desktop package: $pkgName');
+    } catch (e) {
+      Logger.log('Error uninstalling $pkgName: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateSource(Source source) async {
+    await installSource(source);
+  }
+
+  @override
+  Future<void> cancelRequest(String token) async {}
+
+  @override
+  Set<String> get schemes => {"aniyomi", "tachiyomi"};
+
+  @override
+  void handleSchemes(Uri uri) {
+    final url = uri.queryParameters["url"];
+    if (url != null && url.isNotEmpty) {
+      addRepo(
+        url,
+        uri.scheme == "aniyomi" ? ItemType.anime : ItemType.manga,
+      );
+    }
+  }
+}

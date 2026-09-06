@@ -83,7 +83,7 @@ dist
 
 # Flutter / Dart
 .dart_tool/
-build/
+/build/
 
 # Android
 android/.gradle/

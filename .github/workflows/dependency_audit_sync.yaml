@@ -54,7 +54,6 @@ jobs:
       - name: Initialize Git Submodules & Bridge Dependencies
         run: |
           echo "Initializing and updating submodules..."
-          git submodule update --init --recursive packages/anymex_extension_bridge || echo "anymex_extension_bridge failed to clone"
           git submodule update --init --recursive packages/commentum_client || echo "commentum_client failed to clone"
           git submodule update --init --recursive lib/source_engine/inbuilt_sources || echo "inbuilt_sources submodule unavailable (private/fork upstream). Continuing with fallback..."
 
