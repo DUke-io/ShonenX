@@ -3,5 +3,8 @@
     "ANILIST_CLIENT_SECRET": "mobile|desktop",
     "MAL_CLIENT_ID": "mobile|desktop",
     "MAL_CLIENT_SECRET": "mobile|desktop",
-    "COMMENTUM_API_URL": ""
+    "SIMKL_CLIENT_ID": "mobile|desktop",
+    "SIMKL_CLIENT_SECRET": "mobile|desktop",
+    "COMMENTUM_API_URL": "",
+    "RELEASE_REPO": "Zcross091/KuroX"
 }

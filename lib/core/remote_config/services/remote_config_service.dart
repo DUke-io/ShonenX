@@ -6,7 +6,7 @@ import 'package:shonenx/core/utils/app_logger.dart';
 
 class RemoteConfigService {
   static const String _configUrl =
-      'https://raw.githubusercontent.com/roshancodespace/shonenx-config/refs/heads/main/remote_config.json';
+      'https://raw.githubusercontent.com/Zcross091/KuroX/refs/heads/main/remote_config.json';
 
   static const String _cacheKey = 'remote_config_cache';
   static const String _seenAnnouncementsKey =

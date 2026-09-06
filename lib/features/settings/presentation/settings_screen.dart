@@ -212,7 +212,7 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle:
                     'Buy me a coffee to keep the project alive and ad-free!',
                 onTap: () => launchUrl(
-                  Uri.parse('https://buymeacoffee.com/roshan.codespace'),
+                  Uri.parse('https://github.com/Zcross091/KuroX'),
                   mode: LaunchMode.externalApplication,
                 ),
               ),

@@ -6,7 +6,7 @@ import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
 
 class RemoteConfigUI {
   static const String _releasesUrl =
-      'https://github.com/roshancodespace/shonenx/releases/latest';
+      'https://github.com/Zcross091/KuroX/releases/latest';
 
   static Future<void> showUpdateSheet(
     BuildContext context, {

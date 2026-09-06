@@ -15,7 +15,7 @@ class BuiltInPresets {
       name: 'Blood',
       description:
           'Rich blood-red tones, dramatic contrast, and expressive wide content cards.',
-      author: '@roshancodespace',
+      author: '@Zcross091',
       version: 2,
       previewColors: [0xFF7e1e1e, 0xFF651616, 0xFF5e1616],
       themeMode: ThemeMode.system,

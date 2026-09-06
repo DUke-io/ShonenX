@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # +----------------------------------------------------------+
-# |              ShonenX -- Interactive Installer             |
+# |              KuroX -- Interactive Installer             |
 # |         Ultimate Anime & Manga Client for Linux          |
 # +----------------------------------------------------------+
 
 set -euo pipefail
 
 # --- Config ------------------------------------------------
-DEFAULT_REPO="roshancodespace/ShonenX"
-EXE_NAME="shonenx"
-DEFAULT_ICON_URL="https://raw.githubusercontent.com/roshancodespace/shonenx/main/assets/images/app_icon.png"
-INSTALL_DIR="$HOME/.local/share/ShonenX"
-CACHE_DIR="$HOME/.config/ShonenX"
+DEFAULT_REPO="Zcross091/KuroX"
+EXE_NAME="kurox"
+DEFAULT_ICON_URL="https://raw.githubusercontent.com/Zcross091/KuroX/main/assets/images/app_icon.png"
+INSTALL_DIR="$HOME/.local/share/KuroX"
+CACHE_DIR="$HOME/.config/KuroX"
 CACHE_FILE="$CACHE_DIR/installer.cache"
 REPO="$DEFAULT_REPO"
 ICON_INPUT="$DEFAULT_ICON_URL"
@@ -360,17 +360,17 @@ MENU_ITEMS=(
     ">>  Quick Install / Update    Install latest release with defaults"
     "##   Custom Installation       Choose custom repo, fork, or icon"
     "??  System Status             View installed paths & integrations"
-    "**  Setup Shell Command       Install shonenx-manager shortcut"
-    "xx   Uninstall ShonenX        Remove binary, data & shortcuts"
+    "**  Setup Shell Command       Install kurox-manager shortcut"
+    "xx   Uninstall KuroX        Remove binary, data & shortcuts"
     "--  Exit"
 )
 MENU_ICONS=(">>" "## " "??" "**" "xx " "--")
-MENU_LABELS=("Quick Install / Update" "Custom Installation" "System Status" "Setup Shell Command" "Uninstall ShonenX" "Exit")
+MENU_LABELS=("Quick Install / Update" "Custom Installation" "System Status" "Setup Shell Command" "Uninstall KuroX" "Exit")
 MENU_DESCS=(
     "Install latest release with defaults"
     "Choose custom repo, fork, or icon"
     "View installed paths & integrations"
-    "Install shonenx-manager shortcut"
+    "Install kurox-manager shortcut"
     "Remove binary, data & shortcuts"
     ""
 )
@@ -635,7 +635,7 @@ setup_path() {
         mkdir -p "$HOME/.config/fish"
         touch "$HOME/.config/fish/config.fish"
         if ! grep -q "$BIN_DIR" "$HOME/.config/fish/config.fish"; then
-            printf '\n# ShonenX Path\nfish_add_path %s\n' "$BIN_DIR" >> "$HOME/.config/fish/config.fish"
+            printf '\n# KuroX Path\nfish_add_path %s\n' "$BIN_DIR" >> "$HOME/.config/fish/config.fish"
             log_panel_add ok "Updated fish config"
         fi
     fi
@@ -645,22 +645,22 @@ setup_path() {
 update_shell_config() {
     local cfg="$1"
     [ -f "$cfg" ] || return
-    grep -q "# --- ShonenX Manager Start ---" "$cfg" && \
-        sed -i '/# --- ShonenX Manager Start ---/,/# --- ShonenX Manager End ---/d' "$cfg"
+    grep -q "# --- KuroX Manager Start ---" "$cfg" && \
+        sed -i '/# --- KuroX Manager Start ---/,/# --- KuroX Manager End ---/d' "$cfg"
     cat << EOF >> "$cfg"
 
-# --- ShonenX Manager Start ---
-shonenx-manager() {
+# --- KuroX Manager Start ---
+kurox-manager() {
     local url="https://raw.githubusercontent.com/${REPO}/main/install.sh"
-    local tmp="/tmp/shonenx_install_latest.sh"
-    echo -e "\033[0;36m\033[1m[*] Fetching latest ShonenX Manager...\033[0m"
+    local tmp="/tmp/KuroX_install_latest.sh"
+    echo -e "\033[0;36m\033[1m[*] Fetching latest KuroX Manager...\033[0m"
     if curl -sSL --connect-timeout 10 "\$url" -o "\$tmp" && [ -s "\$tmp" ]; then
         bash "\$tmp" "\$@"
     else
         echo -e "\033[0;31m[[!!]] Failed to fetch installer.\033[0m"; return 1
     fi
 }
-# --- ShonenX Manager End ---
+# --- KuroX Manager End ---
 EOF
 }
 
@@ -668,10 +668,10 @@ setup_fish_function() {
     command -v fish >/dev/null 2>&1 || [ -d "$HOME/.config/fish" ] || return
     local fish_dir="$HOME/.config/fish/functions"
     mkdir -p "$fish_dir"
-    cat << EOF > "$fish_dir/shonenx-manager.fish"
-function shonenx-manager --description "ShonenX Remote Launcher"
+    cat << EOF > "$fish_dir/kurox-manager.fish"
+function kurox-manager --description "KuroX Remote Launcher"
     set -l url "https://raw.githubusercontent.com/${REPO}/main/install.sh"
-    set -l tmp "/tmp/shonenx_install_latest.sh"
+    set -l tmp "/tmp/KuroX_install_latest.sh"
     if curl -sSL --connect-timeout 10 "\$url" -o "\$tmp"; and test -s "\$tmp"
         bash "\$tmp" \$argv
     else
@@ -711,7 +711,7 @@ do_install() {
     log_panel_add ok "Latest version: $version"
     log_panel_add step "Downloading bundle from GitHub..."
 
-    local tmp_zip="/tmp/shonenx.zip"
+    local tmp_zip="/tmp/KuroX.zip"
     curl -L --silent "$download_url" -o "$tmp_zip"
     log_panel_add ok "Download complete"
 
@@ -738,21 +738,21 @@ do_install() {
         mkdir -p "$ICON_DIR" "$DESKTOP_DIR"
         local expanded_icon="${ICON_INPUT/#\~/$HOME}"
         if [ -f "$expanded_icon" ]; then
-            cp -f "$expanded_icon" "$ICON_DIR/shonenx.png" && log_panel_add ok "Icon copied from local path"
+            cp -f "$expanded_icon" "$ICON_DIR/KuroX.png" && log_panel_add ok "Icon copied from local path"
         elif [[ "$ICON_INPUT" =~ ^https?:// ]]; then
-            curl -sL "$ICON_INPUT" -o "$ICON_DIR/shonenx.png" && log_panel_add ok "Icon downloaded"
+            curl -sL "$ICON_INPUT" -o "$ICON_DIR/KuroX.png" && log_panel_add ok "Icon downloaded"
         fi
-        cat > "$DESKTOP_DIR/shonenx.desktop" <<EOF
+        cat > "$DESKTOP_DIR/KuroX.desktop" <<EOF
 [Desktop Entry]
 Version=1.0
-Name=ShonenX
+Name=KuroX
 Comment=Anilist & MAL Client for Anime and Manga
 Exec=$BIN_DIR/$EXE_NAME %u
-Icon=$ICON_DIR/shonenx.png
+Icon=$ICON_DIR/KuroX.png
 Terminal=false
 Type=Application
 Categories=Network;Entertainment;
-MimeType=x-scheme-handler/shonenx;x-scheme-handler/aniyomi;x-scheme-handler/tachiyomi;x-scheme-handler/cloudstream;x-scheme-handler/cloudstreamrepo;x-scheme-handler/kotatsu;x-scheme-handler/sora;
+MimeType=x-scheme-handler/KuroX;x-scheme-handler/aniyomi;x-scheme-handler/tachiyomi;x-scheme-handler/cloudstream;x-scheme-handler/cloudstreamrepo;x-scheme-handler/kotatsu;x-scheme-handler/sora;
 EOF
         command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database "$DESKTOP_DIR" || true
         log_panel_add ok "Desktop entry created"
@@ -762,19 +762,19 @@ EOF
     # Silent manager refresh
     do_manager_quiet
     save_cache
-    log_panel_add ok "ShonenX $version installed -- run: $EXE_NAME"
+    log_panel_add ok "KuroX $version installed -- run: $EXE_NAME"
 }
 
 do_manager() {
-    log_panel_add step "Installing shonenx-manager binary..."
+    log_panel_add step "Installing kurox-manager binary..."
     mkdir -p "$BIN_DIR"
-    local manager_path="$BIN_DIR/shonenx-manager"
+    local manager_path="$BIN_DIR/kurox-manager"
     cat << EOF > "$manager_path"
 #!/usr/bin/env bash
 set -euo pipefail
 URL="https://raw.githubusercontent.com/${REPO}/main/install.sh"
-TMP="/tmp/shonenx_install_latest.sh"
-echo -e "\033[0;36m\033[1m[*] Fetching latest ShonenX Manager...\033[0m"
+TMP="/tmp/KuroX_install_latest.sh"
+echo -e "\033[0;36m\033[1m[*] Fetching latest KuroX Manager...\033[0m"
 if curl -sSL --connect-timeout 10 "\$URL" -o "\$TMP" && [ -s "\$TMP" ]; then
     bash "\$TMP" "\$@"
 else
@@ -788,18 +788,18 @@ EOF
     [ -f "$HOME/.zshrc" ]  && update_shell_config "$HOME/.zshrc"  && log_panel_add ok "Updated ~/.zshrc"
     setup_fish_function && log_panel_add ok "Fish function configured"
     setup_path
-    log_panel_add ok "shonenx-manager is ready across all shells"
+    log_panel_add ok "kurox-manager is ready across all shells"
 }
 
 do_manager_quiet() {
     mkdir -p "$BIN_DIR"
-    local manager_path="$BIN_DIR/shonenx-manager"
+    local manager_path="$BIN_DIR/kurox-manager"
     cat << EOF > "$manager_path"
 #!/usr/bin/env bash
 set -euo pipefail
 URL="https://raw.githubusercontent.com/${REPO}/main/install.sh"
-TMP="/tmp/shonenx_install_latest.sh"
-echo -e "\033[0;36m\033[1m[*] Fetching latest ShonenX Manager...\033[0m"
+TMP="/tmp/KuroX_install_latest.sh"
+echo -e "\033[0;36m\033[1m[*] Fetching latest KuroX Manager...\033[0m"
 if curl -sSL --connect-timeout 10 "\$URL" -o "\$TMP" && [ -s "\$TMP" ]; then
     bash "\$TMP" "\$@"
 else
@@ -807,7 +807,7 @@ else
 fi
 EOF
     chmod +x "$manager_path"
-    [ -f "$HOME/.config/fish/functions/shonenx-manager.fish" ] && setup_fish_function >/dev/null 2>&1 || true
+    [ -f "$HOME/.config/fish/functions/kurox-manager.fish" ] && setup_fish_function >/dev/null 2>&1 || true
 }
 
 do_uninstall() {
@@ -815,24 +815,24 @@ do_uninstall() {
     rm -rf "$INSTALL_DIR" && log_panel_add ok "Removed $INSTALL_DIR"
     rm -f "$CACHE_FILE" && rmdir "$CACHE_DIR" 2>/dev/null || true
     rm -f "$BIN_DIR/$EXE_NAME"    && log_panel_add ok "Removed binary"
-    rm -f "$BIN_DIR/shonenx-manager" && log_panel_add ok "Removed shonenx-manager"
+    rm -f "$BIN_DIR/kurox-manager" && log_panel_add ok "Removed kurox-manager"
 
     if [ -n "$DESKTOP_DIR" ]; then
-        rm -f "$DESKTOP_DIR/shonenx.desktop"
-        rm -f "$ICON_DIR/shonenx.png"
+        rm -f "$DESKTOP_DIR/KuroX.desktop"
+        rm -f "$ICON_DIR/KuroX.png"
         command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database "$DESKTOP_DIR" || true
         log_panel_add ok "Removed desktop entry & icon"
     fi
 
     for cfg in "$HOME/.bashrc" "$HOME/.zshrc"; do
-        if [ -f "$cfg" ] && grep -q "# --- ShonenX Manager Start ---" "$cfg"; then
-            sed -i '/# --- ShonenX Manager Start ---/,/# --- ShonenX Manager End ---/d' "$cfg"
+        if [ -f "$cfg" ] && grep -q "# --- KuroX Manager Start ---" "$cfg"; then
+            sed -i '/# --- KuroX Manager Start ---/,/# --- KuroX Manager End ---/d' "$cfg"
             log_panel_add ok "Cleaned $cfg"
         fi
     done
 
-    rm -f "$HOME/.config/fish/functions/shonenx-manager.fish" && log_panel_add ok "Removed fish function"
-    log_panel_add ok "ShonenX fully uninstalled"
+    rm -f "$HOME/.config/fish/functions/kurox-manager.fish" && log_panel_add ok "Removed fish function"
+    log_panel_add ok "KuroX fully uninstalled"
 }
 
 # --- Release Selector --------------------------------------
@@ -1120,7 +1120,7 @@ tui_status() {
     else
         app_status="${C_BRIGHT_RED}Not installed${S_RESET}"
     fi
-    if [ -f "${ICON_DIR:-/dev/null}/shonenx.png" ]; then
+    if [ -f "${ICON_DIR:-/dev/null}/KuroX.png" ]; then
         icon_status="${C_BRIGHT_GREEN}Present${S_RESET}"
     else
         icon_status="${C_BRIGHT_BLACK}Absent${S_RESET}"
@@ -1161,10 +1161,10 @@ tui_status() {
         printf '%s %-8s: %b' "$S_DIM" "$lbl" "$st"
     }
 
-    _shell_status "Binary"   "[ -f \"$BIN_DIR/shonenx-manager\" ]"                                            $(( row + 2 ))
-    _shell_status "Bash"     "[ -f \"$HOME/.bashrc\" ] && grep -q 'ShonenX Manager' \"$HOME/.bashrc\" 2>/dev/null" $(( row + 3 ))
-    _shell_status "Zsh"      "[ -f \"$HOME/.zshrc\"  ] && grep -q 'ShonenX Manager' \"$HOME/.zshrc\"  2>/dev/null" $(( row + 4 ))
-    _shell_status "Fish"     "[ -f \"$HOME/.config/fish/functions/shonenx-manager.fish\" ]"                    $(( row + 5 ))
+    _shell_status "Binary"   "[ -f \"$BIN_DIR/kurox-manager\" ]"                                            $(( row + 2 ))
+    _shell_status "Bash"     "[ -f \"$HOME/.bashrc\" ] && grep -q 'KuroX Manager' \"$HOME/.bashrc\" 2>/dev/null" $(( row + 3 ))
+    _shell_status "Zsh"      "[ -f \"$HOME/.zshrc\"  ] && grep -q 'KuroX Manager' \"$HOME/.zshrc\"  2>/dev/null" $(( row + 4 ))
+    _shell_status "Fish"     "[ -f \"$HOME/.config/fish/functions/kurox-manager.fish\" ]"                    $(( row + 5 ))
 
     # Panel 3: PATH
     local row2=$(( row + 9 ))
@@ -1193,7 +1193,7 @@ tui_status() {
 tui_setup_manager_screen() {
     draw_subscreen "  **  SETUP SHELL COMMAND"
     log_panel_init
-    log_panel_add info "Configuring shonenx-manager across all shells..."
+    log_panel_add info "Configuring kurox-manager across all shells..."
     do_manager
     local H; H=$(term_height)
     cursor_move $(( H - 1 )) 3
@@ -1203,12 +1203,12 @@ tui_setup_manager_screen() {
 }
 
 tui_uninstall() {
-    draw_subscreen "  xx   UNINSTALL SHONENX"
+    draw_subscreen "  xx   UNINSTALL KuroX"
     local W; W=$(term_width)
     local H; H=$(term_height)
 
     cursor_move 5 3
-    printf '%s  [!!]  This will remove ShonenX completely from your system.%s' "$C_BRIGHT_RED$S_BOLD" "$S_RESET"
+    printf '%s  [!!]  This will remove KuroX completely from your system.%s' "$C_BRIGHT_RED$S_BOLD" "$S_RESET"
     cursor_move 7 3
     printf '%s  Type %sYES%s to confirm, or press Enter to cancel: %s' "$C_WHITE" "$S_BOLD" "$S_RESET$C_WHITE" "$S_RESET"
 
@@ -1217,7 +1217,7 @@ tui_uninstall() {
     stty -echo 2>/dev/null || true; cursor_hide
 
     if [ "$CONFIRM" = "YES" ]; then
-        draw_subscreen "  xx   UNINSTALL SHONENX"
+        draw_subscreen "  xx   UNINSTALL KuroX"
         log_panel_init
         do_uninstall
         cursor_move $(( H - 1 )) 3
@@ -1256,8 +1256,8 @@ if [ $# -gt 0 ]; then
                 printf '  --repo <user/repo>  Custom repository\n'
                 printf '  --icon <path|url>   Custom icon\n'
                 printf '  --tag, --release    Specify release tag (e.g. v1.9.0-beta)\n'
-                printf '  --manager           Setup shonenx-manager\n'
-                printf '  --uninstall         Remove ShonenX\n'
+                printf '  --manager           Setup kurox-manager\n'
+                printf '  --uninstall         Remove KuroX\n'
                 printf '  --status            Check install status\n'
                 printf '  --help, -h          This help\n\n'
                 exit 0 ;;
@@ -1279,7 +1279,7 @@ if [ $# -gt 0 ]; then
             do_uninstall
             ;;
         status)
-            printf '\n  %sShonenX Status%s\n\n' "$S_BOLD" "$S_RESET"
+            printf '\n  %sKuroX Status%s\n\n' "$S_BOLD" "$S_RESET"
             [ -f "$BIN_DIR/$EXE_NAME" ] && \
                 printf '  %s[ok]%s  Application : Installed (%s)\n' "$C_BRIGHT_GREEN" "$S_RESET" "$BIN_DIR/$EXE_NAME" || \
                 printf '  %s[!!]%s  Application : Not installed\n' "$C_BRIGHT_RED" "$S_RESET"

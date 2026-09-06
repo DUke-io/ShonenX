@@ -1,4 +1,5 @@
 #!/usr/bin/env dart
+// KuroX Multi-Platform Build Script
 
 import 'dart:io';
 

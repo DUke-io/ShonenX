@@ -1,10 +1,10 @@
 {
-  "name": "ShonenX Ultimate Universal Repository",
+  "name": "KuroX Ultimate Universal Repository",
   "author": "Zcross091",
   "version": "1.0.0",
   "description": "Comprehensive curated repository containing providers for Anime, Donghua, Movies, TV Shows, Manga, Manhwa, Manhua, and Light Novels.",
   "manifestVersion": 1,
-  "iconUrl": "https://raw.githubusercontent.com/Zcross091/ShonenX/main/assets/icons/app_icon.png",
+  "iconUrl": "https://raw.githubusercontent.com/Zcross091/KuroX/main/assets/images/app_icon.png",
   "supportedEngines": [
     "cloudstream",
     "mangayomi",

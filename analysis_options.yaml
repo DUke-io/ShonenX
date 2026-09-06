@@ -1,4 +1,4 @@
-
+# KuroX Analyzer & Linter Configuration
 include: package:flutter_lints/flutter.yaml
 
 linter:

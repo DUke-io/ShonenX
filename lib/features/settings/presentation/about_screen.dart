@@ -252,7 +252,7 @@ class AboutScreen extends ConsumerWidget {
     Color? borderColor;
 
     switch (login) {
-      case 'roshancodespace':
+      case 'Zcross091':
         borderColor = cs.primary;
         break;
 

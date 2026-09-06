@@ -19,7 +19,7 @@ class _DiscordRpcPreviewCardState extends State<DiscordRpcPreviewCard> {
   RpcPreviewTab _activeTab = RpcPreviewTab.idle;
 
   static const String _appIconNetworkUrl =
-      'https://raw.githubusercontent.com/roshancodespace/ShonenX/refs/heads/main/assets/images/app_icon.png';
+      'https://raw.githubusercontent.com/Zcross091/KuroX/main/assets/images/app_icon.png';
   static const String _onePiecePreviewImage =
       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8--VpUm_3ewaKmioaFpTjAUA4z46Qbb-4GQ&s';
 

@@ -367,10 +367,10 @@ class _PresetGallerySheetState extends ConsumerState<PresetGallerySheet> {
     AppThemePreset? targetPreset,
   ]) {
     final nameController = TextEditingController(
-      text: targetPreset?.name ?? 'My ShonenX Theme',
+      text: targetPreset?.name ?? 'My KuroX Theme',
     );
     final authorController = TextEditingController(
-      text: targetPreset?.author ?? '@roshancodespace',
+      text: targetPreset?.author ?? '@Zcross091',
     );
     final descController = TextEditingController(
       text: targetPreset?.description ?? 'Exported custom theme configuration.',

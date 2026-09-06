@@ -13,7 +13,7 @@ class DiscordRpcService {
   static const String _gatewayUrl =
       'wss://gateway.discord.gg/?v=10&encoding=json';
   static const String _appIconUrl =
-      'https://raw.githubusercontent.com/roshancodespace/ShonenX/refs/heads/main/assets/images/app_icon.png';
+      'https://raw.githubusercontent.com/Zcross091/KuroX/main/assets/images/app_icon.png';
 
   final _log = AppLogger.scope(DiscordRpcService);
 
@@ -322,7 +322,7 @@ class DiscordRpcService {
         RPCButton(label: 'View Anime', url: mediaUrl),
         const RPCButton(
           label: 'Watch on ShonenX',
-          url: 'https://github.com/roshancodespace/shonenx',
+          url: 'https://github.com/Zcross091/KuroX',
         ),
       ],
     );
@@ -352,7 +352,7 @@ class DiscordRpcService {
             'metadata': {
               'button_urls': [
                 mediaUrl,
-                'https://github.com/roshancodespace/shonenx',
+                'https://github.com/Zcross091/KuroX',
               ],
             },
           },
@@ -399,7 +399,7 @@ class DiscordRpcService {
         RPCButton(label: 'View Anime', url: mediaUrl),
         const RPCButton(
           label: 'Watch on ShonenX',
-          url: 'https://github.com/roshancodespace/shonenx',
+          url: 'https://github.com/Zcross091/KuroX',
         ),
       ],
     );
@@ -425,7 +425,7 @@ class DiscordRpcService {
             'metadata': {
               'button_urls': [
                 mediaUrl,
-                'https://github.com/roshancodespace/shonenx',
+                'https://github.com/Zcross091/KuroX',
               ],
             },
           },
@@ -482,7 +482,7 @@ class DiscordRpcService {
         RPCButton(label: 'View Manga', url: mediaUrl),
         const RPCButton(
           label: 'Read on ShonenX',
-          url: 'https://github.com/roshancodespace/shonenx',
+          url: 'https://github.com/Zcross091/KuroX',
         ),
       ],
     );
@@ -509,7 +509,7 @@ class DiscordRpcService {
             'metadata': {
               'button_urls': [
                 mediaUrl,
-                'https://github.com/roshancodespace/shonenx',
+                'https://github.com/Zcross091/KuroX',
               ],
             },
           },
@@ -558,7 +558,7 @@ class DiscordRpcService {
         RPCButton(label: 'View $typeStr', url: mediaUrl),
         const RPCButton(
           label: 'Get ShonenX',
-          url: 'https://github.com/roshancodespace/shonenx',
+          url: 'https://github.com/Zcross091/KuroX',
         ),
       ],
     );
@@ -590,7 +590,7 @@ class DiscordRpcService {
             'metadata': {
               'button_urls': [
                 mediaUrl,
-                'https://github.com/roshancodespace/shonenx',
+                'https://github.com/Zcross091/KuroX',
               ],
             },
           },
@@ -630,7 +630,7 @@ class DiscordRpcService {
       buttons: const [
         RPCButton(
           label: 'Get ShonenX',
-          url: 'https://github.com/roshancodespace/shonenx',
+          url: 'https://github.com/Zcross091/KuroX',
         ),
       ],
     );
@@ -653,7 +653,7 @@ class DiscordRpcService {
             },
             'buttons': ['Get ShonenX'],
             'metadata': {
-              'button_urls': ['https://github.com/roshancodespace/shonenx'],
+              'button_urls': ['https://github.com/Zcross091/KuroX'],
             },
           },
         ],

@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "shonenx",
+            "name": "kurox",
             "request": "launch",
             "type": "dart",
             "toolArgs": [
@@ -13,13 +13,13 @@
             ]
         },
         {
-            "name": "shonenx (profile mode)",
+            "name": "kurox (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "shonenx (release mode)",
+            "name": "kurox (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

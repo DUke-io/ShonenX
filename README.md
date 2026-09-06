@@ -77,40 +77,7 @@ Contributions are welcome! If you contribute code, bug fixes, or documentation, 
 </a>
 
 <!-- readme: contributors -start -->
-<table>
-	<tbody>
-		<tr>
-            <td align="center">
-                <a href="https://github.com/roshancodespace">
-                    <img src="https://avatars.githubusercontent.com/u/230851258?v=4" width="64;" alt="roshancodespace"/>
-                    <br />
-                    <sub><b>roshancodespace</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://github.com/Darkx-dev">
-                    <img src="https://avatars.githubusercontent.com/u/130650239?v=4" width="64;" alt="Darkx-dev"/>
-                    <br />
-                    <sub><b>Darkx-dev</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://github.com/Zcross091">
-                    <img src="https://avatars.githubusercontent.com/u/126247344?v=4" width="64;" alt="Zcross091"/>
-                    <br />
-                    <sub><b>Zcross091</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://github.com/Shebyyy">
-                    <img src="https://avatars.githubusercontent.com/u/83452219?v=4" width="64;" alt="Shebyyy"/>
-                    <br />
-                    <sub><b>Shebyyy</b></sub>
-                </a>
-            </td>
-		</tr>
-	<tbody>
-</table>
+
 <!-- readme: contributors -end -->
 
 ---
@@ -123,7 +90,7 @@ KuroX is purely a client application and does not host, upload, or own any media
 
 <div align="center">
 
-**Developed with ❤️ by [Zcross091](https://github.com/Zcross091)**
+**Developed by [Zcross091](https://github.com/Zcross091) and the community**
 
 ⭐ Star the project on GitHub to support active development!
 

@@ -70,7 +70,7 @@ void main(List<String> args) {
 }
 
 void printUsage() {
-  print('ShonenX Source Boilerplate Generator');
+  print('KuroX Source Boilerplate Generator');
   print('Usage: ./scripts/source.dart -c|--create <type>:<source_name>');
   print('Example: ./scripts/source.dart -c anime:animepahe');
 }

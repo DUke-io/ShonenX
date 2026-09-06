@@ -238,7 +238,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             FilledButton.icon(
               onPressed: () => launchUrl(
-                Uri.parse('https://github.com/roshancodespace/shonenx'),
+                Uri.parse('https://github.com/Zcross091/KuroX'),
                 mode: LaunchMode.externalApplication,
               ),
               icon: const SvgIcon(
@@ -261,7 +261,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             FilledButton.icon(
               onPressed: () => launchUrl(
-                Uri.parse('https://buymeacoffee.com/roshan.codespace'),
+                Uri.parse('https://github.com/Zcross091/KuroX'),
                 mode: LaunchMode.externalApplication,
               ),
               icon: const SvgIcon(
