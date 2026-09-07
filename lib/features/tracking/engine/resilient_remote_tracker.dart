@@ -209,7 +209,7 @@ class ResilientRemoteTracker implements RemoteTracker {
         adultMode: adultMode,
       );
 
-      if (result.items.isNotEmpty || query.isNotEmpty) return result;
+      if (result.items.isNotEmpty) return result;
       return await fallback.search(
         query,
         page: page,

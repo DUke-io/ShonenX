@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:anymex_extension_runtime_bridge/anymex_extension_runtime_bridge.dart'
     as bridge;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shonenx/core/utils/app_logger.dart';
@@ -31,6 +32,11 @@ class CommunityRepoSyncService {
       // Only perform automatic remote background check at most once every 6 hours
       final shouldFetchRemote = (now - lastSyncMs) > 6 * 3600 * 1000;
 
+      if (!Get.isRegistered<bridge.ExtensionManager>()) {
+        log.d('ExtensionManager not yet registered; skipping startup sync.');
+        return 0;
+      }
+
       final adapter = ref.read(extensionAdapterProvider);
       final existingRepos = adapter.getAllRepos();
 
@@ -51,8 +57,15 @@ class CommunityRepoSyncService {
   /// Forces an immediate sync from remote GitHub manifest or local cache.
   static Future<int> syncNow(Ref ref) async {
     final log = _log.child('syncNow');
-    final prefs = ref.read(sharedPreferencesProvider);
-    final adapter = ref.read(extensionAdapterProvider);
+
+    if (!Get.isRegistered<bridge.ExtensionManager>()) {
+      log.w('ExtensionManager is not registered; cannot sync repos.');
+      return 0;
+    }
+
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final adapter = ref.read(extensionAdapterProvider);
 
     Map<String, dynamic>? manifest;
 
@@ -170,5 +183,9 @@ class CommunityRepoSyncService {
 
     log.i('Community repo sync completed. Added $addedCount new repos.');
     return addedCount;
+    } catch (e, st) {
+      log.e('Community repo sync failed: $e', e, st);
+      return 0;
+    }
   }
 }
