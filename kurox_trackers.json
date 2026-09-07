@@ -1,0 +1,41 @@
+{
+  "name": "KuroX Community Trackers Registry",
+  "version": "1.0.0",
+  "lastUpdated": "2026-09-07T08:00:00Z",
+  "defaultPrimary": "anilist",
+  "fallbackOrder": [
+    "anilist",
+    "kitsu",
+    "myanimelist",
+    "simkl"
+  ],
+  "trackers": {
+    "anilist": {
+      "name": "AniList",
+      "type": "anilist",
+      "primaryEndpoint": "https://graphql.anilist.co",
+      "mirrors": [],
+      "requiresAuthForBrowse": false
+    },
+    "kitsu": {
+      "name": "Kitsu",
+      "type": "kitsu",
+      "primaryEndpoint": "https://kitsu.io/api/edge",
+      "mirrors": [],
+      "requiresAuthForBrowse": false
+    },
+    "myanimelist": {
+      "name": "MyAnimeList",
+      "type": "myanimelist",
+      "primaryEndpoint": "https://api.myanimelist.net/v2",
+      "communityApi": "https://api.jikan.moe/v4",
+      "requiresAuthForBrowse": false
+    },
+    "simkl": {
+      "name": "Simkl",
+      "type": "simkl",
+      "primaryEndpoint": "https://api.simkl.com",
+      "requiresAuthForBrowse": false
+    }
+  }
+}

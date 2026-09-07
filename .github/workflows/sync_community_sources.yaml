@@ -1,0 +1,95 @@
+name: Sync Community Sources & Trackers
+
+on:
+  schedule:
+    # Run once daily at 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate & Health-Check Community Sources
+        id: health_check
+        run: |
+          node -e "
+          const fs = require('fs');
+          const https = require('https');
+
+          function checkUrl(url) {
+            return new Promise((resolve) => {
+              const req = https.get(url, { headers: { 'User-Agent': 'KuroX-HealthCheck/1.0' }, timeout: 10000 }, (res) => {
+                resolve(res.statusCode >= 200 && res.statusCode < 400);
+              });
+              req.on('error', () => resolve(false));
+              req.on('timeout', () => { req.destroy(); resolve(false); });
+            });
+          }
+
+          async function main() {
+            const repoPath = 'kurox_repository.json';
+            if (!fs.existsSync(repoPath)) {
+              console.error('kurox_repository.json not found');
+              process.exit(1);
+            }
+            const data = JSON.parse(fs.readFileSync(repoPath, 'utf8'));
+            const bundled = data.bundledRepositories || [];
+            console.log('Checking ' + bundled.length + ' bundled repositories...');
+
+            const verified = [];
+            for (const item of bundled) {
+              const ok = await checkUrl(item.url);
+              console.log((ok ? ' [OK] ' : ' [FAIL] ') + item.name + ' -> ' + item.url);
+              if (ok) {
+                verified.push(item);
+              }
+            }
+
+            if (verified.length > 0) {
+              data.bundledRepositories = verified;
+              data.lastSynced = new Date().toISOString();
+              fs.writeFileSync(repoPath, JSON.stringify(data, null, 2) + '\n');
+              console.log('Updated ' + repoPath + ' with ' + verified.length + ' active repositories.');
+            }
+
+            // Also check tracker manifest
+            const trackerPath = 'kurox_trackers.json';
+            if (fs.existsSync(trackerPath)) {
+              const trackerData = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
+              trackerData.lastUpdated = new Date().toISOString();
+              fs.writeFileSync(trackerPath, JSON.stringify(trackerData, null, 2) + '\n');
+            }
+          }
+          main();
+          "
+
+      - name: Commit and Push Changes to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add kurox_repository.json kurox_trackers.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(sync): update community sources and trackers [skip ci]"
+            git push origin HEAD:main
+          fi
+
+      - name: Push to community-sources branch
+        run: |
+          git checkout -B community-sources
+          git push -f origin community-sources

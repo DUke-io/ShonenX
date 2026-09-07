@@ -25,6 +25,7 @@ import 'package:shonenx/features/history/domain/models/read_history_entry.dart';
 import 'package:shonenx/features/library/domain/models/library_entry.dart';
 import 'package:shonenx/features/notifications/domain/models/notification_subscription.dart';
 import 'package:shonenx/features/tracking/domain/isar_tracker_link.dart';
+import 'package:shonenx/features/extensions/services/community_repo_sync_service.dart';
 import 'package:window_manager/window_manager.dart';
 
 class AppInit {
@@ -210,6 +211,7 @@ class AppInit {
       // await extManager.onRuntimeBridgeInitialization();
 
       log.s('Extension bridge ready');
+      unawaited(CommunityRepoSyncService.syncOnStartup(ref));
     } catch (e, st) {
       log.e('BRIDGE INIT FAILED', e, st);
       rethrow;

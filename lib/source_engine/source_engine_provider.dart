@@ -15,31 +15,53 @@ import 'package:shonenx/features/tracking/providers/tracker_registry.dart';
 
 import 'package:shonenx/features/discovery/providers/discovery_prefs_provider.dart';
 
+import 'package:shonenx/features/tracking/engine/resilient_remote_tracker.dart';
+
 final metadataSourceProvider = Provider<RemoteTracker>((ref) {
   final prefs = ref.watch(discoveryPrefsProvider);
   final targetTrackerId = prefs.metadataTrackerId;
-
-  if (targetTrackerId != null) {
-    final targetType = TrackerType.tryFromId(targetTrackerId);
-    if (targetType != null) {
-      final trackers = ref.watch(availableTrackersProvider);
-      try {
-        final targetTracker = trackers.firstWhere((t) => t.type == targetType);
-        if (targetTracker is RemoteTracker) {
-          return targetTracker;
-        }
-      } catch (_) {}
-    }
-  }
-
-  // Fallback to primary
-  final primary = ref.watch(primaryTrackerProvider);
-  if (primary is RemoteTracker) {
-    return primary;
-  }
-
   final trackers = ref.watch(availableTrackersProvider);
-  return trackers.firstWhere((t) => t is RemoteTracker) as RemoteTracker;
+
+  RemoteTracker resolveTargetTracker() {
+    if (targetTrackerId != null) {
+      final targetType = TrackerType.tryFromId(targetTrackerId);
+      if (targetType != null) {
+        try {
+          final target = trackers.firstWhere((t) => t.type == targetType);
+          if (target is RemoteTracker) {
+            return target;
+          }
+        } catch (_) {}
+      }
+    }
+
+    // Fallback to primary
+    final primary = ref.watch(primaryTrackerProvider);
+    if (primary is RemoteTracker) {
+      return primary;
+    }
+
+    return trackers.firstWhere((t) => t is RemoteTracker) as RemoteTracker;
+  }
+
+  final selectedTracker = resolveTargetTracker();
+
+  // Find Kitsu as the resilient community fallback tracker
+  RemoteTracker? fallbackTracker;
+  try {
+    fallbackTracker = trackers.firstWhere(
+      (t) => t.type == TrackerType.kitsu && t is RemoteTracker,
+    ) as RemoteTracker?;
+  } catch (_) {}
+
+  if (fallbackTracker == null || selectedTracker.type == TrackerType.kitsu) {
+    return selectedTracker;
+  }
+
+  return ResilientRemoteTracker(
+    primary: selectedTracker,
+    fallback: fallbackTracker,
+  );
 }, name: 'metadataSourceProvider');
 
 final animeSourceProvider = Provider.family<AnimeSource, SourceInfo>((

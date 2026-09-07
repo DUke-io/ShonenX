@@ -100,7 +100,14 @@ mixin AnilistMetadata on BaseTracker implements RemoteTracker {
         name: 'AnilistTracker.$operation',
         error: body['errors'],
       );
-      throw AnilistException('GraphQL Error: ${body['errors']}');
+      final errors = body['errors'];
+      String msg = 'GraphQL Error';
+      if (errors is List && errors.isNotEmpty && errors.first is Map) {
+        msg = errors.first['message']?.toString() ?? msg;
+      } else {
+        msg = errors.toString();
+      }
+      throw AnilistException(msg);
     }
 
     final data = body['data'] as Map?;

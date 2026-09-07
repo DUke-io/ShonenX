@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:shonenx/core/utils/snackbar_utils.dart';
 import 'package:shonenx/features/extensions/providers/extension_service_provider.dart';
+import 'package:shonenx/features/extensions/services/community_repo_sync_service.dart';
 import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
 import 'package:shonenx/source_engine/source_registry.dart';
 
@@ -575,10 +576,25 @@ class _ManageReposSheetState extends ConsumerState<ManageReposSheet> {
             OutlinedButton.icon(
               onPressed: _isLoading
                   ? null
-                  : () {
-                      _controller.text =
-                          'https://raw.githubusercontent.com/Zcross091/KuroX/main/kurox_repository.json';
-                      _addRepo();
+                  : () async {
+                      setState(() => _isLoading = true);
+                      try {
+                        final added = await CommunityRepoSyncService.syncNow(ref);
+                        if (mounted) {
+                          _showSnackBar(
+                            added > 0
+                                ? 'Successfully synced $added community repositories!'
+                                : 'Community repositories are already up to date!',
+                            isSuccess: true,
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          _showSnackBar('Sync failed: $e', isError: true);
+                        }
+                      } finally {
+                        if (mounted) setState(() => _isLoading = false);
+                      }
                     },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -586,9 +602,9 @@ class _ManageReposSheetState extends ConsumerState<ManageReposSheet> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+              icon: const Icon(Icons.sync_rounded, size: 18),
               label: const Text(
-                'Import Ronin API',
+                'Sync Community Repositories',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ),

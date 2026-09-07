@@ -253,30 +253,6 @@
   },
   "bundledRepositories": [
     {
-      "name": "CloudStream Mega Repo (Hexated)",
-      "engine": "cloudstream",
-      "url": "https://raw.githubusercontent.com/hexated/cloudstream-extensions-hexated/master/repo.json",
-      "types": ["anime", "movies", "tv", "cartoons"]
-    },
-    {
-      "name": "CloudStream Multi (Rowdy5056 / Sora)",
-      "engine": "cloudstream",
-      "url": "https://raw.githubusercontent.com/Rowdy5056/Cloudstream-Extensions/master/repo.json",
-      "types": ["anime", "movies", "tv"]
-    },
-    {
-      "name": "CloudStream Storm Multi-Extensions",
-      "engine": "cloudstream",
-      "url": "https://raw.githubusercontent.com/LikDev-25/Storm-CloudStream-Extensions/master/repo.json",
-      "types": ["anime", "movies", "tv", "asian_drama"]
-    },
-    {
-      "name": "CloudStream Indo & Multi (HatsuneMikuUwU)",
-      "engine": "cloudstream",
-      "url": "https://raw.githubusercontent.com/HatsuneMikuUwU/cloudstream-extensions-uwu/master/repo.json",
-      "types": ["anime", "donghua", "movies", "tv"]
-    },
-    {
       "name": "Mangayomi Official Extensions (Anime, Manga, Novels)",
       "engine": "mangayomi",
       "url": "https://raw.githubusercontent.com/kodjodevf/mangayomi-extensions/main/index.json",
@@ -289,16 +265,56 @@
       "types": ["anime"]
     },
     {
-      "name": "Keiyoushi Manga Extensions (Mihon / Tachiyomi)",
+      "name": "Keiyoushi Extensions (Mihon / Tachiyomi / Aniyomi)",
       "engine": "aniyomi",
       "url": "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json",
-      "types": ["manga", "manhwa", "manhua", "webtoons"]
+      "types": ["manga", "manhwa", "manhua", "webtoons", "anime"]
     },
     {
-      "name": "Kotatsu Parsers (Manga, Manhwa, Comics)",
-      "engine": "kotatsu",
-      "url": "https://raw.githubusercontent.com/KotatsuApp/kotatsu-parsers/master/parsers_list.json",
-      "types": ["manga", "manhwa", "manhua"]
+      "name": "CloudStream Providers Repository (Official)",
+      "engine": "cloudstream",
+      "url": "https://raw.githubusercontent.com/recloudstream/extensions/master/repo.json",
+      "types": ["anime", "movies", "tv"]
+    },
+    {
+      "name": "CloudStream MegaRepo (Community Aggregator)",
+      "engine": "cloudstream",
+      "url": "https://raw.githubusercontent.com/self-similarity/MegaRepo/builds/repo.json",
+      "types": ["anime", "movies", "tv", "cartoons"]
+    },
+    {
+      "name": "Phisher CloudStream Extensions (Anime, Movies & TV)",
+      "engine": "cloudstream",
+      "url": "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/builds/repo.json",
+      "types": ["anime", "movies", "tv", "asian_drama"]
+    },
+    {
+      "name": "CloudStream Indo & Multi (HatsuneMikuUwU)",
+      "engine": "cloudstream",
+      "url": "https://raw.githubusercontent.com/HatsuneMikuUwU/cloudstream-extensions-uwu/master/repo.json",
+      "types": ["anime", "donghua", "movies", "tv"]
     }
-  ]
+  ],
+  "trackers": {
+    "version": "1.0.0",
+    "fallbackOrder": ["anilist", "kitsu", "myanimelist", "simkl"],
+    "endpoints": {
+      "anilist": {
+        "primary": "https://graphql.anilist.co",
+        "mirrors": []
+      },
+      "kitsu": {
+        "primary": "https://kitsu.io/api/edge",
+        "mirrors": []
+      },
+      "myanimelist": {
+        "primary": "https://api.myanimelist.net/v2",
+        "communityApi": "https://api.jikan.moe/v4"
+      },
+      "simkl": {
+        "primary": "https://api.simkl.com"
+      }
+    }
+  }
 }
+
