@@ -97,12 +97,24 @@ jobs:
               major_minor="${version%.*}"
               patch="${version##*.}"
               next_patch=$((patch + 1))
-              alpha_base="v${major_minor}.${next_patch}"
-              last_alpha="$(latest_alpha_for_base "$alpha_base")"
-              if [ -z "$last_alpha" ]; then
-                resolved="${alpha_base}-alpha.1"
+              next_tag="v${major_minor}.${next_patch}"
+
+              # If the user explicitly requested a pre-release, use alpha tagging
+              if [ "$INPUT_IS_PRERELEASE" = "true" ]; then
+                last_alpha="$(latest_alpha_for_base "$next_tag")"
+                if [ -z "$last_alpha" ]; then
+                  resolved="${next_tag}-alpha.1"
+                else
+                  resolved="${next_tag}-alpha.$((last_alpha + 1))"
+                fi
               else
-                resolved="${alpha_base}-alpha.$((last_alpha + 1))"
+                # For push-to-main or default dispatch: bump patch directly as a full release
+                # If the bumped tag also exists, keep incrementing
+                while tag_exists_or_released "$next_tag"; do
+                  next_patch=$((next_patch + 1))
+                  next_tag="v${major_minor}.${next_patch}"
+                done
+                resolved="$next_tag"
               fi
             else
               resolved="$base_tag"
