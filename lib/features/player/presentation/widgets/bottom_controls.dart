@@ -673,12 +673,10 @@ class _BottomControlsState extends ConsumerState<BottomControls> {
           }
         },
         isHighlighted: true,
-        highlightedAccentColor: isCurrentlyDub
-            ? widget.theme.colorScheme.primary
-            : widget.theme.colorScheme.secondary,
+        highlightedAccentColor: Colors.white,
         highlightedBackgroundColor: isCurrentlyDub
-            ? widget.theme.colorScheme.primary.withValues(alpha: 0.1)
-            : widget.theme.colorScheme.secondary.withValues(alpha: 0.1),
+            ? Colors.white.withValues(alpha: 0.15)
+            : Colors.white.withValues(alpha: 0.12),
         theme: widget.theme,
       ),
     );
@@ -760,12 +758,12 @@ class _BottomControlsState extends ConsumerState<BottomControls> {
     Color? defaultBackgroundColor,
   }) {
     final foregroundColor = isHighlighted
-        ? (highlightedAccentColor ?? theme.colorScheme.onPrimaryContainer)
+        ? (highlightedAccentColor ?? Colors.white)
         : (defaultAccentColor ?? Colors.white70);
 
     final backgroundColor = isHighlighted
-        ? (highlightedBackgroundColor ?? theme.colorScheme.primaryContainer)
-        : (defaultBackgroundColor ?? Colors.transparent);
+        ? (highlightedBackgroundColor ?? Colors.white.withValues(alpha: 0.15))
+        : (defaultBackgroundColor ?? Colors.white.withValues(alpha: 0.08));
 
     return InkWell(
       onTap: onTap,

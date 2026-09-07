@@ -91,9 +91,8 @@ class _CenterControlsState extends ConsumerState<CenterControls> {
                       style: IconButton.styleFrom(
                         shape: const CircleBorder(),
                         padding: const EdgeInsets.all(12),
-                        backgroundColor: theme.colorScheme.primaryContainer
-                            .withValues(alpha: 0.4),
-                        foregroundColor: theme.colorScheme.onPrimaryContainer,
+                        backgroundColor: Colors.white.withValues(alpha: 0.15),
+                        foregroundColor: Colors.white,
                       ),
                       onPressed: isPlaying
                           ? widget.engine.pause
