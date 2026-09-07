@@ -154,7 +154,7 @@ jobs:
         run: |
           echo "### 🛠️ Static Analysis & Build Health" >> report.md
           
-          if dart analyze --fatal-infos=false > analyze_output.txt 2>&1; then
+          if dart analyze --no-fatal-infos > analyze_output.txt 2>&1; then
             echo "🟢 **Dart Analyze Passed without fatal errors.**" >> report.md
             echo "analyze_status=PASSED" >> "$GITHUB_OUTPUT"
           else
@@ -168,10 +168,13 @@ jobs:
       - name: Generate Final Audit Report
         id: final_report
         run: |
-          cat << 'EOF' > full_report.md
-          ## 📊 ShonenX Dependency & Ecosystem Compatibility Audit
+          AUDIT_DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          AUDIT_DATE_SHORT=$(date -u +"%Y-%m-%d")
+          echo "audit_date_short=$AUDIT_DATE_SHORT" >> "$GITHUB_OUTPUT"
+          cat << EOF > full_report.md
+          ## 📊 KuroX Dependency & Ecosystem Compatibility Audit
           
-          Automated check executed on **$(date -u +"%Y-%m-%d %H:%M:%S UTC")** for branch \`${{ github.ref_name }}\`.
+          Automated check executed on **${AUDIT_DATE}** for branch \`${{ github.ref_name }}\`.
           
           EOF
           cat report.md >> full_report.md
@@ -207,7 +210,7 @@ jobs:
         if: ${{ (inputs.create_issue == true || github.event_name == 'schedule') && (steps.analyze.outputs.analyze_status == 'WARNINGS' || steps.pub_upgrade.outputs.has_major_updates == 'true') }}
         uses: peter-evans/create-issue-from-file@v5
         with:
-          title: "🤖 Dependency Audit & Compatibility Alert [$(date +'%Y-%m-%d')]"
+          title: "🤖 Dependency Audit & Compatibility Alert [${{ steps.final_report.outputs.audit_date_short }}]"
           content-filepath: full_report.md
           labels: |
             dependencies
