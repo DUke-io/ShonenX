@@ -22,10 +22,10 @@ class CommunityRepoSyncService {
   static final _log = AppLogger.scope('CommunityRepoSyncService');
 
   /// Runs automatically on app launch / bridge initialization.
-  static Future<int> syncOnStartup(Ref ref) async {
+  static Future<int> syncOnStartup(dynamic ref) async {
     final log = _log.child('syncOnStartup');
     try {
-      final prefs = ref.read(sharedPreferencesProvider);
+      final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
       final lastSyncMs = prefs.getInt(_lastSyncKey) ?? 0;
       final now = DateTime.now().millisecondsSinceEpoch;
 
@@ -37,7 +37,7 @@ class CommunityRepoSyncService {
         return 0;
       }
 
-      final adapter = ref.read(extensionAdapterProvider);
+      final ExtensionAdapter adapter = ref.read(extensionAdapterProvider);
       final existingRepos = adapter.getAllRepos();
 
       // If user has 0 repositories, always fetch immediately
@@ -55,7 +55,7 @@ class CommunityRepoSyncService {
   }
 
   /// Forces an immediate sync from remote GitHub manifest or local cache.
-  static Future<int> syncNow(Ref ref) async {
+  static Future<int> syncNow(dynamic ref) async {
     final log = _log.child('syncNow');
 
     if (!Get.isRegistered<bridge.ExtensionManager>()) {
@@ -64,8 +64,8 @@ class CommunityRepoSyncService {
     }
 
     try {
-      final prefs = ref.read(sharedPreferencesProvider);
-      final adapter = ref.read(extensionAdapterProvider);
+      final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
+      final ExtensionAdapter adapter = ref.read(extensionAdapterProvider);
 
     Map<String, dynamic>? manifest;
 
