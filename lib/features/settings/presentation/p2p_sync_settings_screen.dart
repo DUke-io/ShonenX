@@ -426,14 +426,14 @@ class _P2PSyncSettingsScreenState extends ConsumerState<P2PSyncSettingsScreen> {
           SettingsSection(
             title: 'Swarm & Synchronization',
             children: [
-              SettingsTile(
-                title: 'Connected Peers',
-                subtitle: '${syncState.activePeersCount} peers online in your swarm',
+              ListTile(
+                title: const Text('Connected Peers'),
+                subtitle: Text('${syncState.activePeersCount} peers online in your swarm'),
                 leading: const Icon(Icons.hub_outlined),
               ),
-              SettingsTile(
-                title: 'Last Synchronized',
-                subtitle: lastSyncText,
+              ListTile(
+                title: const Text('Last Synchronized'),
+                subtitle: Text(lastSyncText),
                 leading: const Icon(Icons.schedule_outlined),
               ),
               Padding(
