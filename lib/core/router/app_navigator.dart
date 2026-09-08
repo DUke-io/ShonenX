@@ -48,6 +48,7 @@ extension AppNavigator on BuildContext {
   void pushSettingsCache() => push('/settings/cache');
   void pushSettingsUi() => push('/settings/ui');
   void pushSettingsBackup() => push('/settings/backup');
+  void pushSettingsSync() => push('/settings/sync');
   void pushSettingsBackupPreview(BackupManifest manifest) =>
       push('/settings/backup/preview', extra: manifest);
   void pushSettingsTroubleshoot() => push('/settings/troubleshoot');

@@ -93,6 +93,12 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: 'Export or import your data',
                 onTap: () => context.pushSettingsBackup(),
               ),
+              SettingsNavTile(
+                icon: Icons.hub_outlined,
+                title: 'P2P Device Sync',
+                subtitle: 'Account recovery, device sync & Seeder Data',
+                onTap: () => context.pushSettingsSync(),
+              ),
             ],
           ),
 

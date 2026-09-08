@@ -87,6 +87,11 @@ dependencies:
   rhttp: ^0.18.0
   flutter_rust_bridge: ^2.12.0
   intl: ^0.20.3
+  cryptography: ^2.7.0
+  bip39: ^1.0.6
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^5.2.3
+  nsd: ^2.5.0
 
 dependency_overrides:
   flutter_inappwebview:
