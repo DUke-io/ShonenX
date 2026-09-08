@@ -289,9 +289,7 @@ class _P2PSyncSettingsScreenState extends ConsumerState<P2PSyncSettingsScreen> {
         : 'Never';
 
     return AppScaffold(
-      appBar: AppBar(
-        title: const Text('P2P Device Sync'),
-      ),
+      title: 'P2P Device Sync',
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 12),
         children: [

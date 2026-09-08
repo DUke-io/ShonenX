@@ -70,21 +70,14 @@ final syncDataBridgeProvider = Provider<SyncDataBridge>((ref) {
   return SyncDataBridge(backupService);
 });
 
-final p2pSyncProvider = StateNotifierProvider<P2PSyncNotifier, P2PSyncState>((ref) {
-  final storageManager = ref.watch(seederStorageManagerProvider);
-  final dataBridge = ref.watch(syncDataBridgeProvider);
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return P2PSyncNotifier(
-    storageManager: storageManager,
-    dataBridge: dataBridge,
-    prefs: prefs,
-  );
-});
+final p2pSyncProvider =
+    NotifierProvider<P2PSyncNotifier, P2PSyncState>(P2PSyncNotifier.new);
 
-class P2PSyncNotifier extends StateNotifier<P2PSyncState> {
-  final SeederStorageManager _storageManager;
-  final SyncDataBridge _dataBridge;
-  final SharedPreferences _prefs;
+class P2PSyncNotifier extends Notifier<P2PSyncState> {
+  SeederStorageManager get _storageManager =>
+      ref.read(seederStorageManagerProvider);
+  SyncDataBridge get _dataBridge => ref.read(syncDataBridgeProvider);
+  SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
 
   P2PChannel? _p2pChannel;
   SwarmPeerDiscovery? _discovery;
@@ -93,15 +86,13 @@ class P2PSyncNotifier extends StateNotifier<P2PSyncState> {
   static const _prefLastSync = 'kurox_p2p_last_sync_timestamp';
   static const _prefVersion = 'kurox_p2p_snapshot_version';
 
-  P2PSyncNotifier({
-    required SeederStorageManager storageManager,
-    required SyncDataBridge dataBridge,
-    required SharedPreferences prefs,
-  })  : _storageManager = storageManager,
-        _dataBridge = dataBridge,
-        _prefs = prefs,
-        super(const P2PSyncState()) {
-    _init();
+  @override
+  P2PSyncState build() {
+    ref.onDispose(() {
+      _stopP2PNetwork();
+    });
+    Future.microtask(() => _init());
+    return const P2PSyncState();
   }
 
   Future<void> _init() async {
@@ -307,11 +298,5 @@ class P2PSyncNotifier extends StateNotifier<P2PSyncState> {
     await _stopP2PNetwork();
     await SyncIdentity.clearStorage();
     state = state.copyWith(clearIdentity: true, activePeersCount: 0);
-  }
-
-  @override
-  void dispose() {
-    _stopP2PNetwork();
-    super.dispose();
   }
 }
