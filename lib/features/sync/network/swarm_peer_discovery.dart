@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:nsd/nsd.dart' as nsd;
 
 /// Handles zero-configuration peer discovery across Local Area Networks (LAN)
-/// via UDP socket broadcasts and mDNS service advertisements.
+/// via UDP socket broadcasts and multicasts.
 class SwarmPeerDiscovery {
   static const int broadcastPort = 48892;
-  static const String serviceType = '_kurox-sync._tcp';
+  static const String multicastGroupIpv4 = '239.255.255.250';
 
   final String localPeerId;
   final int localTcpPort;
@@ -15,8 +14,6 @@ class SwarmPeerDiscovery {
 
   RawDatagramSocket? _udpSocket;
   Timer? _beaconTimer;
-  nsd.Registration? _nsdRegistration;
-  nsd.Discovery? _nsdDiscovery;
   bool _isRunning = false;
 
   final Set<String> _knownEndpoints = {};
@@ -32,8 +29,7 @@ class SwarmPeerDiscovery {
     if (_isRunning) return;
     _isRunning = true;
 
-    await _startUdpBroadcast();
-    await _startNsdDiscovery();
+    await _startUdpDiscovery();
   }
 
   /// Stops discovery services.
@@ -45,17 +41,6 @@ class SwarmPeerDiscovery {
     try {
       _udpSocket?.close();
       _udpSocket = null;
-    } catch (_) {}
-
-    try {
-      if (_nsdRegistration != null) {
-        await nsd.unregister(_nsdRegistration!);
-        _nsdRegistration = null;
-      }
-      if (_nsdDiscovery != null) {
-        await nsd.stopDiscovery(_nsdDiscovery!);
-        _nsdDiscovery = null;
-      }
     } catch (_) {}
   }
 
@@ -69,11 +54,18 @@ class SwarmPeerDiscovery {
         'port': localTcpPort,
       });
       final bytes = utf8.encode(payload);
+
+      // Send to global IPv4 broadcast
       _udpSocket!.send(bytes, InternetAddress('255.255.255.255'), broadcastPort);
+
+      // Also send to local multicast group
+      try {
+        _udpSocket!.send(bytes, InternetAddress(multicastGroupIpv4), broadcastPort);
+      } catch (_) {}
     } catch (_) {}
   }
 
-  Future<void> _startUdpBroadcast() async {
+  Future<void> _startUdpDiscovery() async {
     try {
       _udpSocket = await RawDatagramSocket.bind(
         InternetAddress.anyIPv4,
@@ -82,6 +74,11 @@ class SwarmPeerDiscovery {
         reusePort: true,
       );
       _udpSocket!.broadcastEnabled = true;
+
+      // Join standard SSDP/multicast group for LAN discovery
+      try {
+        _udpSocket!.joinMulticast(InternetAddress(multicastGroupIpv4));
+      } catch (_) {}
 
       _udpSocket!.listen((RawSocketEvent event) {
         if (event == RawSocketEvent.read) {
@@ -114,34 +111,5 @@ class SwarmPeerDiscovery {
       sendBeacon();
     } catch (_) {}
   }
-
-  Future<void> _startNsdDiscovery() async {
-    try {
-      // Register local service
-      _nsdRegistration = await nsd.register(
-        nsd.Service(
-          name: 'KuroX-$localPeerId',
-          type: serviceType,
-          port: localTcpPort,
-          txt: {'peerId': utf8.encode(localPeerId)},
-        ),
-      );
-
-      // Start discovery of nearby services
-      _nsdDiscovery = await nsd.startDiscovery(serviceType);
-      _nsdDiscovery!.addListener(() {
-        for (final service in _nsdDiscovery!.services) {
-          final host = service.host;
-          final port = service.port;
-          if (host != null && port != null) {
-            final key = '$host:$port';
-            if (_knownEndpoints.add(key)) {
-              final peerId = service.name ?? 'peer';
-              onPeerFound(peerId, host, port);
-            }
-          }
-        }
-      });
-    } catch (_) {}
-  }
 }
+

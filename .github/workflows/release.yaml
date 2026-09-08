@@ -186,6 +186,10 @@ jobs:
           if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
             echo "Using provided repository secrets keystore..."
             echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+            STORE_FILE="upload-keystore.jks"
+          elif [ -f "android/app/kurox-release.jks" ]; then
+            echo "Using permanent KuroX repository release keystore..."
+            STORE_FILE="kurox-release.jks"
           else
             echo "No custom keystore secret found. Generating permanent release keystore for CI signing..."
             keytool -genkey -v -keystore android/app/upload-keystore.jks \
@@ -196,13 +200,14 @@ jobs:
               -storepass "$STORE_PASS" \
               -keypass "$KEY_PASS" \
               -dname "CN=KuroX, OU=Mobile, O=KuroX App, L=San Francisco, S=CA, C=US"
+            STORE_FILE="upload-keystore.jks"
           fi
 
           cat > android/key.properties <<EOF
           storePassword=$STORE_PASS
           keyPassword=$KEY_PASS
           keyAlias=$KEY_ALIAS
-          storeFile=upload-keystore.jks
+          storeFile=$STORE_FILE
           EOF
 
       - name: Create env file
