@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://zcross091.github.io/KuroX/sitemap.xml

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Download KuroX (v2.1.7) — Free Anime App for Android, Windows & Linux</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="title" content="Download KuroX (v2.1.7) — Free Anime App for Android, Windows & Linux">
+  <meta name="description" content="Download KuroX v2.1.7 APK for Android & Android TV, Windows Setup (.exe), and Linux (.tar.gz). 100% ad-free open-source anime streaming and manga reading client. Fork of ShonenX with instant native HiAnime playback.">
+  <meta name="keywords" content="download kurox, kurox apk, shonenx download, shonenx apk, shonenx fork, anime apk download, watch anime app, android tv anime apk, anime app windows setup, anime app linux, free anime streaming apk">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://zcross091.github.io/KuroX/download.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://zcross091.github.io/KuroX/download.html">
+  <meta property="og:title" content="Download KuroX (v2.1.7) — Instant Anime & Manga Client">
+  <meta property="og:description" content="One-click direct browser download for Android, Windows, and Linux. Ad-free, open-source, and instant native streaming.">
+  <meta property="og:image" content="assets/images/app_icon.png">
+
+  <!-- Google Fonts: Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/png" href="assets/images/app_icon.png">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "KuroX",
+    "operatingSystem": "Android, Android TV, Windows, Linux",
+    "applicationCategory": "EntertainmentApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "softwareVersion": "v2.1.7",
+    "downloadUrl": "https://zcross091.github.io/KuroX/download.html"
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Ambient Canvas Background -->
+  <canvas id="ambient-canvas" class="ambient-canvas"></canvas>
+  <div class="ambient-grid"></div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar" id="navbar">
+    <div class="container navbar-inner">
+      <a href="index.html" class="brand-logo" id="nav-brand">
+        <img src="assets/images/app_icon.png" alt="KuroX Logo" class="brand-icon">
+        <span>Kuro<span class="text-gradient">X</span></span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="index.html#features" class="nav-link">Features</a></li>
+        <li><a href="index.html#comparison" class="nav-link">ShonenX vs KuroX</a></li>
+        <li><a href="index.html#community" class="nav-link">Community</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Live GitHub Star Button -->
+        <a href="https://github.com/Zcross091/KuroX" target="_blank" rel="noopener noreferrer" class="btn btn-github-star" id="nav-github-star" title="Star KuroX on GitHub">
+          <span class="star-icon">★</span>
+          <span>Star</span>
+          <span class="github-star-count star-count">...</span>
+        </a>
+
+        <!-- Discord Link -->
+        <a href="https://discord.gg/WXrCUpGG2" target="_blank" rel="noopener noreferrer" class="btn btn-discord" id="nav-discord-btn" title="Join Discord Community">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+          <span>Discord</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Download Portal Hero -->
+  <header class="download-hero">
+    <div class="container">
+      <div class="os-detector-banner" id="detected-os-badge">
+        <span class="badge-pulse"></span>
+        <span>Detecting your device and operating system...</span>
+      </div>
+
+      <h1 class="hero-title" style="margin: 12px 0 16px;">
+        Download <span class="text-gradient">KuroX</span> <span class="current-version-tag">v2.1.7</span>
+      </h1>
+      <p class="hero-description" style="max-width: 650px; margin: 0 auto 36px;">
+        Tap your preferred build below to start downloading directly in your browser. No third-party redirect loops or complex steps.
+      </p>
+
+      <!-- Platform Selection Tabs -->
+      <div class="download-tabs">
+        <button class="tab-btn active" data-os="android" onclick="switchTab('android')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341a.833.833 0 0 1-.83-.833.834.834 0 0 1 .83-.833.834.834 0 0 1 .834.833.834.834 0 0 1-.834.833m-11.046 0a.833.833 0 0 1-.833-.833.834.834 0 0 1 .833-.833.834.834 0 0 1 .834.833.834.834 0 0 1-.834.833M17.9 9.878l1.782-3.087a.406.406 0 0 0-.148-.553.407.407 0 0 0-.554.148L17.16 9.53a12.518 12.518 0 0 0-5.16-.957c-1.848 0-3.585.348-5.16.957L5.02 6.386a.408.408 0 0 0-.554-.148.406.406 0 0 0-.148.553l1.782 3.087C2.474 11.97.027 15.65.027 19.972h23.946c0-4.323-2.447-8.002-6.073-10.094"/></svg>
+          <span>Android & Android TV</span>
+        </button>
+
+        <button class="tab-btn" data-os="windows" onclick="switchTab('windows')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          <span>Windows (10 / 11)</span>
+        </button>
+
+        <button class="tab-btn" data-os="linux" onclick="switchTab('linux')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.003 0c-2.482 0-4.495 2.013-4.495 4.495 0 1.05.362 2.015.968 2.782-.871.492-1.637 1.155-2.25 1.948-.22-.162-.489-.258-.782-.258-1.077 0-1.95 1.085-1.95 2.423 0 1.026.516 1.895 1.258 2.235-.062.395-.098.8-.098 1.213 0 4.965 3.328 8.99 7.35 8.99s7.35-4.025 7.35-8.99c0-.413-.036-.818-.098-1.213.742-.34 1.258-1.209 1.258-2.235 0-1.338-.873-2.423-1.95-2.423-.293 0-.562.096-.782.258-.613-.793-1.379-1.456-2.25-1.948.606-.767.968-1.732.968-2.782 0-2.482-2.013-4.495-4.495-4.495z"/></svg>
+          <span>Linux Desktops</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Download Panels -->
+  <main class="container" style="padding-bottom: 80px;">
+
+    <!-- ==================== ANDROID PANEL ==================== -->
+    <section class="download-platform-panel active" id="panel-android">
+      <div class="download-cards-grid">
+        <!-- Universal APK (Highlighted / Recommended) -->
+        <div class="download-card recommended">
+          <div class="badge-recommended">Recommended</div>
+          <div class="download-card-header">
+            <span class="card-os-tag">Universal Android & TV</span>
+            <h3 class="card-title">Universal APK</h3>
+            <p class="card-desc">
+              All-in-one APK package with native libraries for all processors. Best for Android TV sideloading, tablets, and phones.
+            </p>
+          </div>
+          <ul class="card-meta-list">
+            <li><span>Architecture</span><span>Universal (All Devices)</span></li>
+            <li><span>File Size</span><span>~85.4 MB</span></li>
+            <li><span>Minimum Android</span><span>Android 6.0+ (API 23)</span></li>
+            <li><span>Signature</span><span>Verified Stable Keystore</span></li>
+          </ul>
+          <button class="download-btn-direct cyan" onclick="triggerDirectDownload('android-universal')" id="btn-dl-universal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Universal APK</span>
+          </button>
+        </div>
+
+        <!-- Arm64-v8a APK -->
+        <div class="download-card">
+          <div class="download-card-header">
+            <span class="card-os-tag">Modern Smartphones</span>
+            <h3 class="card-title">Arm64-v8a APK</h3>
+            <p class="card-desc">
+              Compact high-speed binary tailored exclusively for modern 64-bit Android smartphones. Smaller download and faster launch.
+            </p>
+          </div>
+          <ul class="card-meta-list">
+            <li><span>Architecture</span><span>64-bit (arm64-v8a)</span></li>
+            <li><span>File Size</span><span>~33.7 MB</span></li>
+            <li><span>Recommended For</span><span>Phones made after 2018</span></li>
+            <li><span>Signature</span><span>Verified Stable Keystore</span></li>
+          </ul>
+          <button class="download-btn-direct" onclick="triggerDirectDownload('android-arm64')" id="btn-dl-arm64">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Arm64 APK</span>
+          </button>
+        </div>
+
+        <!-- Armeabi-v7a APK -->
+        <div class="download-card">
+          <div class="download-card-header">
+            <span class="card-os-tag">Legacy Devices</span>
+            <h3 class="card-title">Armeabi-v7a APK</h3>
+            <p class="card-desc">
+              Tailored specifically for older 32-bit smartphones, legacy smart displays, and budget Android devices.
+            </p>
+          </div>
+          <ul class="card-meta-list">
+            <li><span>Architecture</span><span>32-bit (armeabi-v7a)</span></li>
+            <li><span>File Size</span><span>~32.8 MB</span></li>
+            <li><span>Recommended For</span><span>Legacy 32-bit hardware</span></li>
+            <li><span>Signature</span><span>Verified Stable Keystore</span></li>
+          </ul>
+          <button class="download-btn-direct" onclick="triggerDirectDownload('android-armv7')" id="btn-dl-armv7">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Arm-v7a APK</span>
+          </button>
+        </div>
+
+        <!-- x86_64 APK -->
+        <div class="download-card">
+          <div class="download-card-header">
+            <span class="card-os-tag">Emulators & Chromebooks</span>
+            <h3 class="card-title">x86_64 APK</h3>
+            <p class="card-desc">
+              Native Intel and AMD x86 architecture. Ideal for Android Studio emulators, BlueStacks, LDPlayer, and ChromeOS devices.
+            </p>
+          </div>
+          <ul class="card-meta-list">
+            <li><span>Architecture</span><span>Intel/AMD (x86_64)</span></li>
+            <li><span>File Size</span><span>~35.3 MB</span></li>
+            <li><span>Recommended For</span><span>Chromebooks & Emulators</span></li>
+            <li><span>Signature</span><span>Verified Stable Keystore</span></li>
+          </ul>
+          <button class="download-btn-direct" onclick="triggerDirectDownload('android-x86')" id="btn-dl-x86">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download x86_64 APK</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== WINDOWS PANEL ==================== -->
+    <section class="download-platform-panel" id="panel-windows">
+      <div class="download-cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+        <!-- Windows Setup (Recommended) -->
+        <div class="download-card recommended">
+          <div class="badge-recommended">Recommended</div>
+          <div class="download-card-header">
+            <span class="card-os-tag">Windows 10 / 11</span>
+            <h3 class="card-title">Windows Setup (.exe)</h3>
+            <p class="card-desc">
+              Official Inno Setup installer. Automatically creates Start Menu shortcuts, desktop icons, and enables Discord Rich Presence integration.
+            </p>
+          </div>
+          <ul class="card-meta-list">
+            <li><span>Format</span><span>Standard Executable (.exe)</span></li>
+            <li><span>File Size</span><span>~35.9 MB</span></li>
+            <li><span>Supported OS</span><span>Windows 10, Windows 11 (64-bit)</span></li>
+            <li><span>Features</span><span>Auto-updater, Discord RPC, Shortcuts</span></li>
+          </ul>
+          <button class="download-btn-direct cyan" onclick="triggerDirectDownload('windows-setup')" id="btn-dl-win-setup">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Windows Installer (.exe)</span>
+          </button>
+        </div>
+
+        <!-- Windows Portable ZIP -->
+        <div class="download-card">
+          <div class="download-card-header">
+            <span class="card-os-tag">Zero Installation</span>
+            <h3 class="card-title">Windows Portable (.zip)</h3>
+            <p class="card-desc">
+              Standalone portable archive. Extract to any directory or USB flash drive and run without admin privileges.
+            </p>
+          </div>
+          <ul class="card-meta-list">
+            <li><span>Format</span><span>ZIP Compressed Archive (.zip)</span></li>
+            <li><span>File Size</span><span>~46.0 MB</span></li>
+            <li><span>Supported OS</span><span>Windows 10, Windows 11 (64-bit)</span></li>
+            <li><span>Installation</span><span>None required (Portable)</span></li>
+          </ul>
+          <button class="download-btn-direct" onclick="triggerDirectDownload('windows-portable')" id="btn-dl-win-portable">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Portable (.zip)</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== LINUX PANEL ==================== -->
+    <section class="download-platform-panel" id="panel-linux">
+      <div class="download-cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+        <!-- Linux Tarball -->
+        <div class="download-card recommended">
+          <div class="badge-recommended">Recommended</div>
+          <div class="download-card-header">
+            <span class="card-os-tag">Linux Distributions</span>
+            <h3 class="card-title">Linux Tarball (.tar.gz)</h3>
+            <p class="card-desc">
+              Universal binary release compiled with native Wayland/X11 support. Compatible with Arch Linux, Ubuntu, Debian, Fedora, openSUSE, and Manjaro.
+            </p>
+          </div>
+          <ul class="card-meta-list">
+            <li><span>Format</span><span>Compressed Tarball (.tar.gz)</span></li>
+            <li><span>File Size</span><span>~93.4 MB</span></li>
+            <li><span>Architecture</span><span>x86_64 (64-bit)</span></li>
+            <li><span>Dependencies</span><span>Standard GTK3 / libmpv</span></li>
+          </ul>
+          <button class="download-btn-direct cyan" onclick="triggerDirectDownload('linux-tar')" id="btn-dl-linux-tar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Linux Tarball (.tar.gz)</span>
+          </button>
+        </div>
+
+        <!-- Linux Zip Archive -->
+        <div class="download-card">
+          <div class="download-card-header">
+            <span class="card-os-tag">Universal Archive</span>
+            <h3 class="card-title">Linux Zip (.zip)</h3>
+            <p class="card-desc">
+              Standard zip format containing all required binary executables and shared runtime libraries.
+            </p>
+          </div>
+          <ul class="card-meta-list">
+            <li><span>Format</span><span>Standard Zip (.zip)</span></li>
+            <li><span>File Size</span><span>~93.4 MB</span></li>
+            <li><span>Architecture</span><span>x86_64 (64-bit)</span></li>
+            <li><span>Permissions</span><span>chmod +x shonenx</span></li>
+          </ul>
+          <button class="download-btn-direct" onclick="triggerDirectDownload('linux-zip')" id="btn-dl-linux-zip">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Linux Zip (.zip)</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Installation & Verification Guide -->
+    <section class="section" style="padding-top: 40px;">
+      <div class="section-header">
+        <div class="section-tag">Quick Start</div>
+        <h2 class="section-title">Installation Guides</h2>
+      </div>
+
+      <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">📱</div>
+          <h3 class="feature-title">Android & Android TV</h3>
+          <p class="feature-text">
+            1. Tap the download button above to save the APK directly.<br>
+            2. When opening, tap "Settings" and toggle <strong>"Allow from this source"</strong> if prompted.<br>
+            3. Tap <strong>Install</strong>. Future updates install cleanly without deleting old versions thanks to our permanent release keystore.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">🪟</div>
+          <h3 class="feature-title">Windows 10 & 11</h3>
+          <p class="feature-text">
+            1. Download <strong>KuroX-windows-setup.exe</strong>.<br>
+            2. If Windows SmartScreen displays "Windows protected your PC", click <strong>"More info"</strong> and select <strong>"Run anyway"</strong>.<br>
+            3. Follow the quick setup wizard. KuroX will automatically register with Discord for Rich Presence!
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">🐧</div>
+          <h3 class="feature-title">Linux Desktop</h3>
+          <p class="feature-text">
+            1. Extract the tarball: <code>tar -xzf KuroX-v2.1.7-linux-x86_64.tar.gz</code><br>
+            2. Navigate to directory: <code>cd bundle</code><br>
+            3. Grant execution rights and launch: <code>chmod +x shonenx && ./shonenx</code>
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        <div>
+          <a href="index.html" class="brand-logo" style="display: inline-flex; font-size: 1.1rem; margin-right: 16px;">
+            <img src="assets/images/app_icon.png" alt="KuroX Logo" class="brand-icon" style="width: 26px; height: 26px;">
+            <span>Kuro<span class="text-gradient">X</span></span>
+          </a>
+          © 2026 KuroX Project • Fork of ShonenX • Free & Open Source under GPL-3.0
+        </div>
+        <div style="display: flex; gap: 20px;">
+          <a href="https://github.com/Zcross091/KuroX" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); text-decoration: none;">GitHub</a>
+          <a href="https://discord.gg/WXrCUpGG2" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); text-decoration: none;">Discord</a>
+          <a href="index.html" style="color: var(--text-muted); text-decoration: none;">Home</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'index.html'
+      - 'download.html'
+      - 'style.css'
+      - 'main.js'
+      - 'robots.txt'
+      - 'sitemap.xml'
+      - '.nojekyll'
+      - 'assets/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Prepare Web Distribution
+        run: |
+          mkdir -p _site/assets/images
+          cp index.html _site/
+          cp download.html _site/
+          cp style.css _site/
+          cp main.js _site/
+          cp robots.txt _site/
+          cp sitemap.xml _site/
+          cp .nojekyll _site/
+          if [ -d "assets/images" ]; then
+            cp -r assets/images/* _site/assets/images/
+          fi
+          echo "Web distribution directory structure:"
+          ls -la _site/
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

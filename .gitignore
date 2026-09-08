@@ -90,8 +90,8 @@ dist
 android/.gradle/
 android/app/build/
 
-# Misc
 *.log
 
-*.js
+# Allow root website script
+!main.js
 *.zip
