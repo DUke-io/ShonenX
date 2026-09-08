@@ -138,27 +138,16 @@ class UpdateService {
       // Compare versions
       final cmp = _compareVersions(latestRelease.tagName, currentVersion);
       if (cmp > 0) {
-        // Tag version is strictly newer
+        // Tag version is strictly newer than current installed version
         if (!force && latestRelease.id == prefs.lastDismissedReleaseId) {
           _log.i('Release ${latestRelease.tagName} was previously dismissed.');
           return null;
         }
         return latestRelease;
-      } else if (cmp == 0) {
-        // Version string matches or couldn't be distinguished by string alone.
-        // Compare release ID with stored last seen/installed ID.
-        if (prefs.lastSeenReleaseId != null &&
-            latestRelease.id != prefs.lastSeenReleaseId &&
-            latestRelease.id != prefs.lastDismissedReleaseId &&
-            latestRelease.id > prefs.lastSeenReleaseId!) {
-          if (!force && latestRelease.id == prefs.lastDismissedReleaseId) {
-            return null;
-          }
-          _log.i('Same tag version but higher release ID (${latestRelease.id} > ${prefs.lastSeenReleaseId}).');
-          return latestRelease;
-        }
       } else {
-        // App version is newer or equal to latest release tag. Record as seen.
+        // Current installed version is equal to or newer than the latest release.
+        // If the user is on a test version (e.g. pre-release or newer build), do NOT ping.
+        _log.i('Current version ($currentVersion) is up to date or newer than latest release (${latestRelease.tagName}).');
         if (prefs.lastSeenReleaseId != latestRelease.id) {
           await _ref.read(updatePrefsProvider.notifier).setLastSeenReleaseId(latestRelease.id);
         }
@@ -174,14 +163,21 @@ class UpdateService {
     final cleanTag = tag.trim().replaceFirst(RegExp(r'^v', caseSensitive: false), '');
     final cleanCurrent = currentVersion.trim().replaceFirst(RegExp(r'^v', caseSensitive: false), '');
 
-    final tagParts = cleanTag.split('-');
-    final currentParts = cleanCurrent.split('-');
+    // Extract build numbers (+number) if present
+    final tagBuildIndex = cleanTag.indexOf('+');
+    final currentBuildIndex = cleanCurrent.indexOf('+');
 
-    final tagMainAndBuild = tagParts[0].split('+');
-    final currentMainAndBuild = currentParts[0].split('+');
+    final tagNoBuild = tagBuildIndex != -1 ? cleanTag.substring(0, tagBuildIndex) : cleanTag;
+    final currentNoBuild = currentBuildIndex != -1 ? cleanCurrent.substring(0, currentBuildIndex) : cleanCurrent;
 
-    final tagNums = tagMainAndBuild[0].split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    final currentNums = currentMainAndBuild[0].split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final tagBuildStr = tagBuildIndex != -1 ? cleanTag.substring(tagBuildIndex + 1) : '';
+    final currentBuildStr = currentBuildIndex != -1 ? cleanCurrent.substring(currentBuildIndex + 1) : '';
+
+    final tagParts = tagNoBuild.split('-');
+    final currentParts = currentNoBuild.split('-');
+
+    final tagNums = tagParts[0].split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final currentNums = currentParts[0].split('.').map((e) => int.tryParse(e) ?? 0).toList();
 
     for (var i = 0; i < 3; i++) {
       final a = i < tagNums.length ? tagNums[i] : 0;
@@ -190,14 +186,19 @@ class UpdateService {
       if (a < b) return -1;
     }
 
-    // Main versions are equal. Check pre-release tags.
-    final tagPre = tagParts.length > 1 ? tagParts.sublist(1).join('-').split('+')[0] : '';
-    final currentPre = currentParts.length > 1 ? currentParts.sublist(1).join('-').split('+')[0] : '';
+    // Main major.minor.patch versions are equal. Check pre-release identifiers.
+    final tagPre = tagParts.length > 1 ? tagParts.sublist(1).join('-') : '';
+    final currentPre = currentParts.length > 1 ? currentParts.sublist(1).join('-') : '';
 
-    if (tagPre.isEmpty && currentPre.isNotEmpty) return 1; // 2.0.0 > 2.0.0-alpha
-    if (tagPre.isNotEmpty && currentPre.isEmpty) return -1; // 2.0.0-alpha < 2.0.0
+    // If one is pre-release and one is final:
+    // If the remote release is NOT pre-release and local IS pre-release of the same version:
+    // e.g. local is 2.1.5-alpha.1 and remote is 2.1.5 -> remote is final release, so remote is newer (1)
+    if (tagPre.isEmpty && currentPre.isNotEmpty) return 1;
+    // If remote is pre-release but local is final:
+    // e.g. local is 2.1.5 and remote is 2.1.5-alpha.1 -> local is newer (-1)
+    if (tagPre.isNotEmpty && currentPre.isEmpty) return -1;
 
-    if (tagPre != currentPre) {
+    if (tagPre.isNotEmpty && currentPre.isNotEmpty) {
       final tagSegments = tagPre.split('.');
       final currentSegments = currentPre.split('.');
       final len = tagSegments.length > currentSegments.length ? tagSegments.length : currentSegments.length;
@@ -216,9 +217,7 @@ class UpdateService {
       }
     }
 
-    // Check build number (+number)
-    final tagBuildStr = tag.contains('+') ? tag.split('+').last : (tagMainAndBuild.length > 1 ? tagMainAndBuild[1] : '');
-    final currentBuildStr = currentVersion.contains('+') ? currentVersion.split('+').last : (currentMainAndBuild.length > 1 ? currentMainAndBuild[1] : '');
+    // Check build number (+number) if versions and pre-releases are identical
     final tagBuild = int.tryParse(tagBuildStr) ?? 0;
     final currentBuild = int.tryParse(currentBuildStr) ?? 0;
     if (tagBuild > currentBuild) return 1;

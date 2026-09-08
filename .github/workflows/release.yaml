@@ -150,7 +150,6 @@ jobs:
           git submodule update --init lib/source_engine/inbuilt_sources || echo "inbuilt_sources submodule unavailable (private/fork upstream). Continuing..."
 
       - name: Override pubspec.yaml version
-        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           CLEAN_VER="${{ needs.resolve-release-tag.outputs.clean_version }}"
@@ -180,25 +179,31 @@ jobs:
 
       - name: Setup Keystore & Signing Configuration
         run: |
+          KEY_PASS="${{ secrets.ANDROID_KEY_PASSWORD || 'kurox_release_key_2026' }}"
+          STORE_PASS="${{ secrets.ANDROID_STORE_PASSWORD || 'kurox_release_key_2026' }}"
+          KEY_ALIAS="${{ secrets.ANDROID_KEY_ALIAS || 'kurox' }}"
+
           if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
             echo "Using provided repository secrets keystore..."
             echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
-            cat > android/key.properties <<EOF
-          storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}
-          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
-          storeFile=upload-keystore.jks
-          EOF
           else
-            echo "No custom keystore provided. Generating a release keystore for CI signing..."
-            keytool -genkey -v -keystore android/app/upload-keystore.jks -alias kurox -keyalg RSA -keysize 2048 -validity 10000 -storepass kuroxpass -keypass kuroxpass -dname "CN=KuroX, OU=Development, O=KuroX, L=Unknown, S=Unknown, C=US"
-            cat > android/key.properties <<EOF
-          storePassword=kuroxpass
-          keyPassword=kuroxpass
-          keyAlias=kurox
+            echo "No custom keystore secret found. Generating permanent release keystore for CI signing..."
+            keytool -genkey -v -keystore android/app/upload-keystore.jks \
+              -alias "$KEY_ALIAS" \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass "$STORE_PASS" \
+              -keypass "$KEY_PASS" \
+              -dname "CN=KuroX, OU=Mobile, O=KuroX App, L=San Francisco, S=CA, C=US"
+          fi
+
+          cat > android/key.properties <<EOF
+          storePassword=$STORE_PASS
+          keyPassword=$KEY_PASS
+          keyAlias=$KEY_ALIAS
           storeFile=upload-keystore.jks
           EOF
-          fi
 
       - name: Create env file
         run: |
@@ -284,7 +289,6 @@ jobs:
           git submodule update --init lib/source_engine/inbuilt_sources || echo "inbuilt_sources submodule unavailable (private/fork upstream). Continuing..."
 
       - name: Override pubspec.yaml version
-        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           CLEAN_VER="${{ needs.resolve-release-tag.outputs.clean_version }}"
@@ -363,7 +367,6 @@ jobs:
           git submodule update --init lib/source_engine/inbuilt_sources || echo "inbuilt_sources submodule unavailable (private/fork upstream). Continuing..."
 
       - name: Override pubspec.yaml version
-        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           CLEAN_VER="${{ needs.resolve-release-tag.outputs.clean_version }}"
