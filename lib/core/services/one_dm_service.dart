@@ -22,6 +22,7 @@ class OneDMService {
   String? _cachedPackage;
 
   Future<String?> getInstalledPackage() async {
+    if (!Platform.isAndroid) return null;
     if (_cachedPackage != null) {
       return _cachedPackage;
     }

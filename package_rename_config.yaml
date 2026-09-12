@@ -3,6 +3,16 @@ package_rename_config-production:
     app_name: "KuroX"
     package_name: "com.zcross.kurox"
 
+  ios:
+    app_name: "KuroX"
+    bundle_name: "KuroX"
+    package_name: "com.zcross.kurox"
+
+  macos:
+    app_name: "KuroX"
+    package_name: "com.zcross.kurox"
+    copyright_notice: "Copyright © 2026 Zcross091"
+
   linux:
     app_name: "KuroX"
     package_name: "com.zcross.kurox"
@@ -18,6 +28,16 @@ package_rename_config-development:
   android:
     app_name: "KuroX Dev"
     package_name: "com.zcross.kurox.dev"
+
+  ios:
+    app_name: "KuroX Dev"
+    bundle_name: "KuroX Dev"
+    package_name: "com.zcross.kurox.dev"
+
+  macos:
+    app_name: "KuroX Dev"
+    package_name: "com.zcross.kurox.dev"
+    copyright_notice: "Copyright © 2026 Zcross091"
 
   linux:
     app_name: "KuroX Dev"

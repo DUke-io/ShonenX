@@ -1,0 +1,204 @@
+name: Apple (iOS & macOS) Builds
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Target release tag to attach binaries to (e.g. v2.1.12)"
+        required: false
+        default: ""
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resolve-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.resolve.outputs.tag_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve Release Tag
+        id: resolve
+        run: |
+          if [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+          else
+            VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
+            TAG="v${VERSION}"
+          fi
+          echo "Resolved tag: $TAG"
+          echo "tag_name=$TAG" >> $GITHUB_OUTPUT
+
+  build-macos:
+    needs: resolve-tag
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Init submodules
+        run: |
+          git submodule update --init packages/commentum_client || true
+          git submodule update --init lib/source_engine/inbuilt_sources || echo "inbuilt_sources submodule unavailable (private/fork upstream). Continuing..."
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.35.7
+          cache: true
+
+      - name: Create Keys Environment
+        run: |
+          cat > keys.json <<EOF
+          {
+            "ANILIST_CLIENT_ID": "${{ secrets.ANILIST_CLIENT_ID }}",
+            "ANILIST_CLIENT_SECRET": "${{ secrets.ANILIST_CLIENT_SECRET }}",
+            "MAL_CLIENT_ID": "${{ secrets.MAL_CLIENT_ID }}",
+            "MAL_CLIENT_SECRET": "${{ secrets.MAL_CLIENT_SECRET }}",
+            "SIMKL_CLIENT_ID": "${{ secrets.SIMKL_CLIENT_ID }}",
+            "SIMKL_CLIENT_SECRET": "${{ secrets.SIMKL_CLIENT_SECRET }}",
+            "COMMENTUM_API_URL": "${{ secrets.COMMENTUM_API_URL }}",
+            "RELEASE_REPO": "${{ github.repository }}"
+          }
+          EOF
+
+      - name: Enable macOS Desktop
+        run: flutter config --enable-macos-desktop
+
+      - name: Get Dependencies
+        run: |
+          for i in 1 2 3 4 5; do
+            echo "Running flutter pub get (attempt $i/5)..."
+            flutter pub get && break || (echo "pub get failed, retrying in 10s..." && sleep 10)
+          done
+
+      - name: Install macOS Pods
+        run: |
+          cd macos
+          pod repo update || true
+          pod install
+          cd ..
+
+      - name: Build macOS App
+        run: flutter build macos --release --obfuscate --split-debug-info=build/symbols --tree-shake-icons --dart-define-from-file=keys.json
+
+      - name: Package macOS Artifact
+        run: |
+          TAG="${{ needs.resolve-tag.outputs.tag_name }}"
+          mkdir -p output-macos
+          cd build/macos/Build/Products/Release
+          zip -r -y "../../../../../output-macos/KuroX-${TAG}-macos-universal.zip" KuroX.app
+          cd ../../../../../
+          ls -lh output-macos/
+
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-bundle
+          path: output-macos/*
+
+  build-ios:
+    needs: resolve-tag
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Init submodules
+        run: |
+          git submodule update --init packages/commentum_client || true
+          git submodule update --init lib/source_engine/inbuilt_sources || echo "inbuilt_sources submodule unavailable (private/fork upstream). Continuing..."
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.35.7
+          cache: true
+
+      - name: Create Keys Environment
+        run: |
+          cat > keys.json <<EOF
+          {
+            "ANILIST_CLIENT_ID": "${{ secrets.ANILIST_CLIENT_ID }}",
+            "ANILIST_CLIENT_SECRET": "${{ secrets.ANILIST_CLIENT_SECRET }}",
+            "MAL_CLIENT_ID": "${{ secrets.MAL_CLIENT_ID }}",
+            "MAL_CLIENT_SECRET": "${{ secrets.MAL_CLIENT_SECRET }}",
+            "SIMKL_CLIENT_ID": "${{ secrets.SIMKL_CLIENT_ID }}",
+            "SIMKL_CLIENT_SECRET": "${{ secrets.SIMKL_CLIENT_SECRET }}",
+            "COMMENTUM_API_URL": "${{ secrets.COMMENTUM_API_URL }}",
+            "RELEASE_REPO": "${{ github.repository }}"
+          }
+          EOF
+
+      - name: Get Dependencies
+        run: |
+          for i in 1 2 3 4 5; do
+            echo "Running flutter pub get (attempt $i/5)..."
+            flutter pub get && break || (echo "pub get failed, retrying in 10s..." && sleep 10)
+          done
+
+      - name: Install iOS Pods
+        run: |
+          cd ios
+          pod repo update || true
+          pod install
+          cd ..
+
+      - name: Build iOS (Unsigned for Sideloading)
+        run: flutter build ios --release --no-codesign --obfuscate --split-debug-info=build/symbols --tree-shake-icons --dart-define-from-file=keys.json
+
+      - name: Package Unsigned IPA (AltStore / Sideloadly / TrollStore)
+        run: |
+          TAG="${{ needs.resolve-tag.outputs.tag_name }}"
+          mkdir -p output-ios
+          mkdir -p Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/KuroX.app
+          zip -r -y "output-ios/KuroX-${TAG}-ios-unsigned.ipa" Payload
+          rm -rf Payload
+          ls -lh output-ios/
+
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-bundle
+          path: output-ios/*
+
+  attach-to-release:
+    needs: [resolve-tag, build-macos, build-ios]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all Apple artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: apple-artifacts
+          merge-multiple: true
+
+      - name: Check Artifacts & Attach to Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ needs.resolve-tag.outputs.tag_name }}"
+          echo "Checking for release $TAG to attach Apple artifacts..."
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG found! Attaching macOS and iOS binaries..."
+            gh release upload "$TAG" apple-artifacts/* --clobber
+            echo "Successfully attached Apple binaries to release $TAG!"
+          else
+            echo "Release $TAG does not exist on GitHub yet. Artifacts remain saved in GitHub Actions."
+          fi

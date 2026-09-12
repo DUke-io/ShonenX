@@ -233,10 +233,10 @@ jobs:
           done
 
       - name: Build Split-per-ABI APKs (Mobile & TV)
-        run: flutter build apk --release --split-per-abi --dart-define-from-file=keys.json
+        run: flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols --tree-shake-icons --dart-define-from-file=keys.json
 
       - name: Build Universal APK (Universal Android & Android TV)
-        run: flutter build apk --release --dart-define-from-file=keys.json
+        run: flutter build apk --release --obfuscate --split-debug-info=build/symbols --tree-shake-icons --dart-define-from-file=keys.json
 
       - name: Prepare & Rename Android & Android TV Artifacts
         run: |
@@ -339,7 +339,7 @@ jobs:
           done
 
       - name: Build Linux app
-        run: flutter build linux --release -v --dart-define-from-file=keys.json
+        run: flutter build linux --release --obfuscate --split-debug-info=build/symbols --tree-shake-icons --dart-define-from-file=keys.json
 
       - name: Package Linux PC Artifacts
         run: |
@@ -422,9 +422,9 @@ jobs:
       - name: Build Windows app
         shell: bash
         run: |
-          flutter build windows --release --dart-define-from-file=keys.json || {
+          flutter build windows --release --obfuscate --split-debug-info=build/symbols --tree-shake-icons --dart-define-from-file=keys.json || {
             echo "First build failed (likely due to media_kit libmpv download race condition). Retrying..."
-            flutter build windows --release --dart-define-from-file=keys.json
+            flutter build windows --release --obfuscate --split-debug-info=build/symbols --tree-shake-icons --dart-define-from-file=keys.json
           }
 
       - name: Build Installer (InnoBundle)
