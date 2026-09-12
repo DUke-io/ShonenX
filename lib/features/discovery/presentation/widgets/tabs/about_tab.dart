@@ -4,7 +4,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shonenx/core/router/app_navigator.dart';
+import 'package:shonenx/core/services/notification_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:shonenx/core/utils/formatting.dart';
@@ -893,6 +895,29 @@ class _AiringBanner extends ConsumerWidget {
                 final notifier = ref.read(
                   notificationSubscriptionsProvider.notifier,
                 );
+                final currentSub = notifier.getSubscription(subType, media.id);
+                final willEnable = currentSub == null || !currentSub.isEnabled;
+
+                if (willEnable) {
+                  final granted =
+                      await NotificationService.instance.requestPermissions();
+                  if (!granted && context.mounted) {
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                          'Notification permission was denied. Please enable notifications in device settings.',
+                        ),
+                        action: SnackBarAction(
+                          label: 'Settings',
+                          onPressed: () => openAppSettings(),
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+                }
+
                 await notifier.toggleSubscription(media);
                 final sub = notifier.getSubscription(subType, media.id);
                 if (context.mounted) {

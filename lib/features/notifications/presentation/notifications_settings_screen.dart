@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shonenx/features/notifications/domain/models/notification_subscription.dart';
 import 'package:shonenx/features/notifications/providers/notification_subscriptions_provider.dart';
+import 'package:shonenx/shared/models/unified_media.dart';
 import 'package:shonenx/shared/widgets/app_scaffold.dart';
 
 class NotificationsSettingsScreen extends ConsumerWidget {
@@ -99,6 +101,21 @@ class _SubscriptionTile extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
       child: ListTile(
+        onTap: () {
+          final media = UnifiedMedia(
+            id: subscription.referenceId,
+            title: MediaTitle(
+              english: subscription.title,
+              romaji: subscription.title,
+              native: subscription.title,
+            ),
+            cover: subscription.image,
+            type: subscription.type == SubscriptionType.mangaChapter
+                ? MediaType.MANGA
+                : MediaType.ANIME,
+          );
+          context.push('/details/${media.type.id}', extra: media);
+        },
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8),

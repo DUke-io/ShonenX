@@ -44,8 +44,8 @@ class NotificationSubscriptionsNotifier
     for (var sub in subscriptions) {
       map[_mapKey(sub.type, sub.referenceId)] = sub;
 
-      // App Start Sync: Check if entireSeason and the latest scheduled is in the past
-      if (sub.isEnabled && sub.mode == SubscriptionMode.entireSeason) {
+      // App Start Sync: Check if enabled and the latest scheduled is in the past
+      if (sub.isEnabled) {
         if (sub.upcomingTime != null &&
             sub.upcomingTime!.isBefore(DateTime.now())) {
           _syncSubscription(sub);
@@ -98,8 +98,13 @@ class NotificationSubscriptionsNotifier
           .toList();
 
       if (upcoming.isNotEmpty) {
-        // Schedule all found future episodes
-        for (final schedule in upcoming) {
+        // If nextOnly mode, only schedule the very next upcoming episode.
+        // If entireSeason mode, schedule all found upcoming episodes.
+        final episodesToSchedule = sub.mode == SubscriptionMode.nextOnly
+            ? [upcoming.reduce((a, b) => a.airingAt.isBefore(b.airingAt) ? a : b)]
+            : upcoming;
+
+        for (final schedule in episodesToSchedule) {
           final scheduledTime = schedule.airingAt.subtract(
             Duration(minutes: sub.offsetMinutes),
           );
@@ -115,6 +120,7 @@ class NotificationSubscriptionsNotifier
               title: 'New Episode Alert: ${sub.title}',
               body: 'Episode ${schedule.episode} is arriving soon!',
               scheduleTime: scheduledTime,
+              payload: '${sub.type.name}:${sub.referenceId}',
             );
           }
         }
@@ -242,6 +248,7 @@ class NotificationSubscriptionsNotifier
             title: 'New Episode Alert: ${subscription.title}',
             body: 'Episode ${schedule.episode} is arriving soon!',
             scheduleTime: scheduledTime,
+            payload: '${subscription.type.name}:${subscription.referenceId}',
           );
         }
       }
@@ -269,12 +276,13 @@ class NotificationSubscriptionsNotifier
       );
 
       if (scheduledTime != null) {
+        final epLabel = subscription.upcomingIdentifier?.replaceAll('ep_', '') ?? 'new';
         final scheduled = await _notificationService.schedule(
           id: notifId,
-          title: 'New Update Alert: ${subscription.title}',
-          body:
-              'A new update (${subscription.upcomingIdentifier ?? ''}) is arriving soon!',
+          title: 'New Episode Alert: ${subscription.title}',
+          body: 'Episode $epLabel is arriving soon!',
           scheduleTime: scheduledTime,
+          payload: '${subscription.type.name}:${subscription.referenceId}',
         );
         if (!scheduled) {
           _log.w('Failed to schedule notification for ${subscription.title}');

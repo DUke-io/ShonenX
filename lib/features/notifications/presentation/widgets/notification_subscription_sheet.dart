@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shonenx/core/services/notification_service.dart';
 
 import 'package:shonenx/features/discovery/domain/media_args.dart';
 import 'package:shonenx/features/discovery/presentation/widgets/sheets/manual_tracker_match_sheet.dart';
@@ -122,6 +124,25 @@ class _NotificationSubscriptionSheetState
         ? SubscriptionType.mangaChapter
         : SubscriptionType.animeAiring;
     final existingSub = provider.getSubscription(subType, widget.media.id);
+
+    if (_isEnabled) {
+      final granted = await NotificationService.instance.requestPermissions();
+      if (!granted && mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Notification permission was denied. Please enable notifications in device settings.',
+            ),
+            action: SnackBarAction(
+              label: 'Settings',
+              onPressed: () => openAppSettings(),
+            ),
+          ),
+        );
+        return;
+      }
+    }
 
     final sub = NotificationSubscription()
       ..type = subType

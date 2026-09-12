@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shonenx/app_init.dart';
+import 'package:shonenx/core/router/app_router.dart';
 import 'package:shonenx/core/utils/app_logger.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -52,11 +55,11 @@ class NotificationService {
 
       const android = AndroidInitializationSettings('@mipmap/ic_launcher');
       const windows = WindowsInitializationSettings(
-        appName: 'ShonenX',
-        appUserModelId: 'com.example.shonenx',
+        appName: 'KuroX',
+        appUserModelId: 'com.kurox.app',
         guid: '123e4567-e89b-12d3-a456-426614174000',
       );
-      const linux = LinuxInitializationSettings(defaultActionName: 'ShonenX');
+      const linux = LinuxInitializationSettings(defaultActionName: 'KuroX');
 
       const settings = InitializationSettings(
         android: android,
@@ -66,10 +69,22 @@ class NotificationService {
 
       await _plugin.initialize(
         settings: settings,
-        onDidReceiveNotificationResponse: (_) {
-          _log.d('Notification tapped by user');
+        onDidReceiveNotificationResponse: (response) {
+          _log.d('Notification tapped by user: payload=${response.payload}');
+          final payload = response.payload;
+          if (payload != null && payload.isNotEmpty) {
+            _handleNotificationTap(payload);
+          }
         },
       );
+
+      final launchDetails = await _plugin.getNotificationAppLaunchDetails();
+      if (launchDetails?.didNotificationLaunchApp ?? false) {
+        final payload = launchDetails?.notificationResponse?.payload;
+        if (payload != null && payload.isNotEmpty) {
+          _handleNotificationTap(payload);
+        }
+      }
 
       if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
         final pending = await _plugin.pendingNotificationRequests();
@@ -83,11 +98,35 @@ class NotificationService {
     }
   }
 
+  void _handleNotificationTap(String payload) {
+    final target = _getDeepLinkFromPayload(payload);
+    _log.i('Handling notification payload "$payload" -> route "$target"');
+    final context = rootNavigatorKey.currentContext;
+    if (context != null) {
+      try {
+        GoRouter.of(context).push(target);
+      } catch (e) {
+        _log.w('Could not navigate directly, fallback to pendingDeepLink: $e');
+        AppInit.pendingDeepLink = target;
+      }
+    } else {
+      AppInit.pendingDeepLink = target;
+    }
+  }
+
+  String _getDeepLinkFromPayload(String payload) {
+    if (payload.startsWith('/')) return payload;
+    return '/settings/notifications';
+  }
+
   Future<bool> requestPermissions() async {
     _log.i('Requesting notification permissions manually...');
     bool granted = false;
 
     if (Platform.isAndroid) {
+      final notifStatus = await Permission.notification.request();
+      granted = notifStatus.isGranted;
+
       final androidPlugin = _plugin
           .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin
@@ -99,9 +138,9 @@ class NotificationService {
         final alarmsGranted =
             await androidPlugin.requestExactAlarmsPermission() ?? false;
 
-        granted = notificationsGranted;
+        granted = granted || notificationsGranted;
         _log.d(
-          'Android permissions requested. Notifications: $notificationsGranted, Alarms: $alarmsGranted',
+          'Android permissions requested. Notifications: $granted, Alarms: $alarmsGranted',
         );
       }
     } else if (Platform.isIOS) {
@@ -119,6 +158,22 @@ class NotificationService {
             ) ??
             false;
       }
+    } else if (Platform.isMacOS) {
+      final macPlugin = _plugin
+          .resolvePlatformSpecificImplementation<
+            MacOSFlutterLocalNotificationsPlugin
+          >();
+      if (macPlugin != null) {
+        granted =
+            await macPlugin.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            ) ??
+            false;
+      }
+    } else {
+      granted = true;
     }
 
     return granted;
@@ -134,6 +189,7 @@ class NotificationService {
     required String title,
     required String body,
     required DateTime scheduleTime,
+    String? payload,
   }) async {
     _log.d('Attempting to schedule notification [$id] for $scheduleTime');
 
@@ -169,6 +225,7 @@ class NotificationService {
         scheduledDate: tz.TZDateTime.from(scheduleTime, tz.local),
         notificationDetails: _getNotificationDetails(),
         androidScheduleMode: scheduleMode,
+        payload: payload,
       );
 
       _scheduledIds.add(id);
@@ -195,6 +252,7 @@ class NotificationService {
     required int id,
     required String title,
     required String body,
+    String? payload,
   }) async {
     _log.d('Attempting to show immediate notification [$id]');
     try {
@@ -203,6 +261,7 @@ class NotificationService {
         title: title,
         body: body,
         notificationDetails: _getNotificationDetails(),
+        payload: payload,
       );
       _log.s('Successfully showed immediate notification [$id]');
     } catch (e, st) {
