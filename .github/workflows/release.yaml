@@ -552,13 +552,39 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  notify:
-    needs: [resolve-release-tag, build-android, build-linux, build-windows]
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || github.event.inputs.notify_discord == 'true')
-    uses: ./.github/workflows/Notify.yml
-    with:
-      notify_everyone: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.notify_everyone == 'true' || true }}
-      include_logs: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.include_logs == 'true' || true }}
-      is_prerelease: ${{ needs.resolve-release-tag.outputs.is_prerelease == 'true' }}
-      tag_name: ${{ needs.resolve-release-tag.outputs.tag_name }}
-    secrets: inherit
+      - name: Send Discord Release Notification
+        if: github.event_name == 'push' || github.event.inputs.notify_discord == 'true'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          TAG: ${{ needs.resolve-release-tag.outputs.tag_name }}
+          NOTIFY_EVERYONE: ${{ github.event.inputs.notify_everyone }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then
+            echo "Skipping Discord notification: Webhook missing."
+            exit 0
+          fi
+          
+          REPO_URL="https://github.com/${{ github.repository }}"
+          RELEASE_URL="${REPO_URL}/releases/download/${TAG}"
+          
+          # Truncate changelog safely for Discord embed
+          CHANGELOG=$(head -c 1500 release_notes.md 2>/dev/null || echo "Release $TAG compiled successfully.")
+          
+          # Build Download Links strictly from compiled release artifacts
+          LINKS=""
+          cd release-artifacts
+          for f in *; do
+            if [ -f "$f" ]; then
+              LINKS="${LINKS}\n• [${f}](${RELEASE_URL}/${f})"
+            fi
+          done
+          
+          MENTION=""
+          if [ "$NOTIFY_EVERYONE" = "true" ] || [ "${{ github.event_name }}" = "push" ]; then
+            MENTION="@everyone "
+          fi
+          
+          BODY="${MENTION}**KuroX Release Compiled: ${TAG}**\n\n**Changelog:**\n${CHANGELOG}\n\n**Direct Asset Downloads:**${LINKS}\n\n[View on GitHub](${RELEASE_URL})"
+          PAYLOAD=$(jq -n --arg content "$BODY" '{content: $content}')
+          
+          curl -s -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK"

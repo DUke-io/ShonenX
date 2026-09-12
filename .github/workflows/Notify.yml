@@ -39,9 +39,6 @@ on:
       use_latest_artifacts:
         type: boolean
         default: false
-    secrets:
-      DISCORD_WEBHOOK:
-        required: true
 
 permissions:
   contents: write
