@@ -101,6 +101,29 @@ async function fetchGitHubMetadata() {
   } catch (e) {
     console.warn('GitHub release tag fetch fallback:', e);
   }
+
+  try {
+    // 3. Fetch Total Downloads across all releases
+    const releasesRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases?per_page=20`);
+    if (releasesRes.ok) {
+      const releasesData = await releasesRes.json();
+      if (Array.isArray(releasesData)) {
+        let totalDownloads = 0;
+        releasesData.forEach(rel => {
+          (rel.assets || []).forEach(a => {
+            totalDownloads += (a.download_count || 0);
+          });
+        });
+        if (totalDownloads > 0) {
+          document.querySelectorAll('.total-downloads-count').forEach(el => {
+            el.textContent = totalDownloads >= 100 ? `${totalDownloads}+` : `${totalDownloads}`;
+          });
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('GitHub downloads count fetch fallback:', e);
+  }
 }
 
 /**
@@ -184,6 +207,19 @@ function triggerDirectDownload(assetKey) {
   setTimeout(() => {
     document.body.removeChild(link);
   }, 1000);
+
+  // 3. Record privacy-friendly download event in GoatCounter
+  try {
+    if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+      window.goatcounter.count({
+        path: 'download-' + assetKey,
+        title: 'Download ' + (asset.os || assetKey),
+        event: true
+      });
+    }
+  } catch (e) {
+    // Non-blocking telemetry
+  }
 }
 
 /**
