@@ -46,7 +46,7 @@ dependencies:
   shared_preferences: ^2.5.5
   cached_network_image: ^3.4.1
   rxdart: ^0.28.0
-  volume_controller: ^3.4.4
+  volume_controller: 3.4.1
   screen_brightness: ^2.1.7
   http: ^1.6.0
   flutter_inappwebview:
