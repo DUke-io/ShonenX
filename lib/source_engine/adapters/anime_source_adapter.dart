@@ -81,9 +81,33 @@ class AnimeSourceAdapter extends BaseSourceAdapter implements AnimeSource {
 
       return videos
           .where((e) => e.url.isNotEmpty)
-          .map(
-            (e) => VideoStream(
-              url: e.url,
+          .map((e) {
+            String finalUrl = e.url;
+            if (finalUrl.startsWith('http://127.0.0.1') ||
+                finalUrl.startsWith('http://localhost')) {
+              final uri = Uri.tryParse(finalUrl);
+
+              if (uri != null &&
+                  uri.path == '/m3u8' &&
+                  uri.queryParameters.containsKey('url')) {
+                final extractedUrl = uri.queryParameters['url'];
+
+                if (extractedUrl != null) {
+                  final extractedUri = Uri.tryParse(extractedUrl);
+                  final isTorrent =
+                      extractedUri != null &&
+                      (extractedUri.scheme == 'magnet' ||
+                          extractedUri.scheme == 'torrent');
+
+                  if (!isTorrent) {
+                    finalUrl = extractedUrl;
+                  }
+                }
+              }
+            }
+
+            return VideoStream(
+              url: finalUrl,
               quality: (e.title != null && e.title!.isNotEmpty)
                   ? e.title!
                   : (e.quality.isNotEmpty ? e.quality : 'Default'),
@@ -99,8 +123,8 @@ class AnimeSourceAdapter extends BaseSourceAdapter implements AnimeSource {
                     ),
                   )
                   .toList(),
-            ),
-          )
+            );
+          })
           .toList();
     } catch (e, st) {
       methodLog.e('getSources failed', e, st);
