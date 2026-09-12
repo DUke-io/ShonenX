@@ -15,9 +15,9 @@
   "categories": {
     "anime": [
       {
-        "name": "HiAnime / Zoro",
+        "name": "Public API",
         "lang": "en",
-        "baseUrl": "https://hianime.to",
+        "baseUrl": "https://hianime.at",
         "type": "anime",
         "status": "active",
         "quality": [

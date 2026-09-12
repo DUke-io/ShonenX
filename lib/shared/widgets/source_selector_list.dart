@@ -57,7 +57,56 @@ class SourceSelectorList extends ConsumerWidget {
 
     final groupedNames = groupedSources.keys.toList();
 
-    return ListView.builder(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (mediaType == MediaType.ANIME)
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: cs.primaryContainer.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: cs.primary.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.public_rounded,
+                  size: 24,
+                  color: cs.primary,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Viewing via Public API',
+                        style: textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: cs.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'You are viewing anime through the built-in Public API. You can switch to any installed extension below.',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        Flexible(
+          child: ListView.builder(
       shrinkWrap: true,
       physics: const BouncingScrollPhysics(),
       itemCount: groupedNames.length,
@@ -108,13 +157,31 @@ class SourceSelectorList extends ConsumerWidget {
                                   height: isSubItem ? 32 : 44,
                                   fit: BoxFit.cover,
                                   errorWidget: (context, url, error) => Icon(
-                                    Icons.extension,
+                                    sourceInfo.type == SourceType.inbuilt
+                                        ? Icons.public_rounded
+                                        : Icons.extension,
                                     size: isSubItem ? 32 : 44,
+                                    color: cs.primary,
                                   ),
                                 )
-                              : Icon(
-                                  Icons.extension,
-                                  size: isSubItem ? 32 : 44,
+                              : Container(
+                                  width: isSubItem ? 32 : 44,
+                                  height: isSubItem ? 32 : 44,
+                                  decoration: BoxDecoration(
+                                    color: sourceInfo.type == SourceType.inbuilt
+                                        ? cs.primaryContainer.withValues(alpha: 0.5)
+                                        : cs.surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    sourceInfo.type == SourceType.inbuilt
+                                        ? Icons.public_rounded
+                                        : Icons.extension,
+                                    size: isSubItem ? 20 : 26,
+                                    color: sourceInfo.type == SourceType.inbuilt
+                                        ? cs.primary
+                                        : cs.onSurfaceVariant,
+                                  ),
                                 ),
                         ),
                         const SizedBox(width: 16),
@@ -257,6 +324,9 @@ class SourceSelectorList extends ConsumerWidget {
           },
         );
       },
-    );
+    ),
+  ),
+],
+);
   }
 }

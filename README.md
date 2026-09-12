@@ -22,7 +22,7 @@
 
 ## ✨ Key Features
 
-- ⚡ **Instant Native Streaming (1s–3s)**: Built-in high-speed native HiAnime provider. No manual repo installation or setup required—open and start streaming immediately in full HD with subtitles and dubbed audio.
+- ⚡ **Instant Native Streaming (1s–3s)**: Built-in high-speed native Public API provider. No manual repo installation required—open and start streaming immediately in full HD, or use third-party extensions of your choice.
 - 🛠️ **Fixed Stream Extraction**: Built-in fixes for the extension bridge ensuring multi-repo sources (Aniyomi, Mangayomi, CloudStream) resolve streams reliably without "No video available" errors.
 - 🧭 **Season Navigator**: Fast season switcher for multi-season franchises, spin-offs, and sequels directly from the anime details screen.
 - 🔒 **App Lock Security**: Built-in biometric and PIN protection for private watchlists, library items, and read history.

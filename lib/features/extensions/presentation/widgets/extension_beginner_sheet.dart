@@ -69,7 +69,34 @@ class _ExtensionBeginnerSheetState
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: cs.primaryContainer.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: cs.primary.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.public_rounded, color: cs.primary, size: 22),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'You are currently viewing anime through the built-in Public API. Third-party extensions give you access to other external anime & manga providers.',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: cs.onSurface,
+                        fontWeight: FontWeight.w500,
+                        height: 1.25,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
 
             // Step 1: Engine Selection
             _buildTimelineStep(

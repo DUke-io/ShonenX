@@ -30,10 +30,10 @@ class HiAnimeSource implements AnimeSource {
   @override
   SourceInfo get sourceInfo => SourceInfo(
         id: 'inbuilt_hianime',
-        name: 'HiAnime (Native)',
+        name: 'Public API',
         type: SourceType.inbuilt,
         mediaType: MediaType.ANIME,
-        iconUrl: 'https://hianime.to/images/favicon.png',
+        iconUrl: null,
         baseUrl: _baseUrl,
         lang: 'en',
       );
@@ -48,8 +48,8 @@ class HiAnimeSource implements AnimeSource {
     return [
       SourceSetting(
         id: 'base_url',
-        name: 'Mirror Domain',
-        description: 'Primary domain for HiAnime streams',
+        name: 'API Endpoint',
+        description: 'Primary endpoint for Public API streams',
         type: SettingType.select,
         defaultValue: 'https://hianime.at',
         options: const [
