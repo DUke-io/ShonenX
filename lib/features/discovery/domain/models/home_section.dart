@@ -135,4 +135,29 @@ class HomeSection {
 
   factory HomeSection.fromJson(String source) =>
       HomeSection.fromMap(jsonDecode(source));
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is HomeSection &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          title == other.title &&
+          type == other.type &&
+          disabled == other.disabled &&
+          libraryStatus == other.libraryStatus &&
+          targetTracker == other.targetTracker &&
+          targetMediaType == other.targetMediaType &&
+          trackerCategory == other.trackerCategory;
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      title.hashCode ^
+      type.hashCode ^
+      disabled.hashCode ^
+      (libraryStatus?.hashCode ?? 0) ^
+      (targetTracker?.hashCode ?? 0) ^
+      (targetMediaType?.hashCode ?? 0) ^
+      (trackerCategory?.hashCode ?? 0);
 }

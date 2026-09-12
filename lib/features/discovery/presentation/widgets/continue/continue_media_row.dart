@@ -11,15 +11,25 @@ import 'package:shonenx/features/history/providers/read_history_provider.dart';
 import 'package:shonenx/features/history/providers/watch_history_provider.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
 
-class ContinueMediaRow extends ConsumerWidget {
+class ContinueMediaRow extends ConsumerStatefulWidget {
   final String title;
   final MediaType type;
 
   const ContinueMediaRow({super.key, required this.title, required this.type});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isAnime = type == MediaType.ANIME;
+  ConsumerState<ContinueMediaRow> createState() => _ContinueMediaRowState();
+}
+
+class _ContinueMediaRowState extends ConsumerState<ContinueMediaRow>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final isAnime = widget.type == MediaType.ANIME;
 
     final asyncData = isAnime
         ? ref.watch(continueWatchingPerAnimeProvider(10))
@@ -51,11 +61,11 @@ class ContinueMediaRow extends ConsumerWidget {
               .height;
 
     return HorizontalSection(
-      title: title,
+      title: widget.title,
       height: layoutHeight,
       emptyText: isAnime ? 'No anime in this list.' : 'No manga in this list.',
       data: asyncData,
-      onMoreTap: () => context.pushContinueHistory(type),
+      onMoreTap: () => context.pushContinueHistory(widget.type),
       itemBuilder: (context, dynamic entry) {
         if (isAnime) {
           final watchEntry = entry as WatchHistoryEntry;

@@ -29,6 +29,25 @@ class HomeFeedSection {
   bool get isDiscovery => type == HomeSectionType.discovery;
   bool get isContinueMedia => type == HomeSectionType.continueMedia;
   bool get isLibraryStatus => type == HomeSectionType.libraryStatus;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is HomeFeedSection &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          type == other.type &&
+          mediaType == other.mediaType &&
+          sourceInfo?.id == other.sourceInfo?.id &&
+          homeSection == other.homeSection;
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      type.hashCode ^
+      mediaType.hashCode ^
+      (sourceInfo?.id.hashCode ?? 0) ^
+      (homeSection?.hashCode ?? 0);
 }
 
 final singleSourceFeedProvider =

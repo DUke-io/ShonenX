@@ -101,6 +101,9 @@ class HomeScreen extends ConsumerWidget {
           }
         },
         child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
           slivers: [
             // Top Header Bar
             SliverToBoxAdapter(
@@ -122,13 +125,28 @@ class HomeScreen extends ConsumerWidget {
               )
             else
               SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final section = activeSections[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0),
-                    child: _buildSectionWidget(context, ref, section),
-                  );
-                }, childCount: activeSections.length),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final section = activeSections[index];
+                    return Padding(
+                      key: ValueKey('sec_pad_${section.id}'),
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: HomeFeedSectionRow(
+                        key: ValueKey('sec_row_${section.id}'),
+                        section: section,
+                      ),
+                    );
+                  },
+                  childCount: activeSections.length,
+                  findChildIndexCallback: (Key key) {
+                    if (key is ValueKey<String>) {
+                      final id = key.value.replaceFirst('sec_pad_', '');
+                      final idx = activeSections.indexWhere((s) => s.id == id);
+                      return idx >= 0 ? idx : null;
+                    }
+                    return null;
+                  },
+                ),
               ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -253,11 +271,27 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionWidget(
-    BuildContext context,
-    WidgetRef ref,
-    HomeFeedSection section,
-  ) {
+}
+
+class HomeFeedSectionRow extends ConsumerStatefulWidget {
+  final HomeFeedSection section;
+
+  const HomeFeedSectionRow({super.key, required this.section});
+
+  @override
+  ConsumerState<HomeFeedSectionRow> createState() => _HomeFeedSectionRowState();
+}
+
+class _HomeFeedSectionRowState extends ConsumerState<HomeFeedSectionRow>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final section = widget.section;
+
     switch (section.type) {
       case HomeSectionType.continueMedia:
         return ContinueMediaRow(title: section.title, type: section.mediaType);
