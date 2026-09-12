@@ -154,11 +154,11 @@ jobs:
         run: |
           echo "### 🛠️ Static Analysis & Build Health" >> report.md
           
-          if dart analyze --no-fatal-infos > analyze_output.txt 2>&1; then
-            echo "🟢 **Dart Analyze Passed without fatal errors.**" >> report.md
+          if flutter analyze --no-fatal-infos > analyze_output.txt 2>&1; then
+            echo "🟢 **Flutter Analyze Passed without fatal errors.**" >> report.md
             echo "analyze_status=PASSED" >> "$GITHUB_OUTPUT"
           else
-            echo "⚠️ **Dart Analyze Reported Issues:**" >> report.md
+            echo "⚠️ **Flutter Analyze Reported Issues:**" >> report.md
             echo '```text' >> report.md
             head -n 20 analyze_output.txt >> report.md
             echo '```' >> report.md
