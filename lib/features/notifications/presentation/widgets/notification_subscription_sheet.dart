@@ -113,7 +113,7 @@ class _NotificationSubscriptionSheetState
     }
   }
 
-  void _save() {
+  Future<void> _save() async {
     final provider = ref.read(notificationSubscriptionsProvider.notifier);
 
     final airingAt = widget.media.airingAt;
