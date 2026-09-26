@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shonenx/core/router/app_navigator.dart';
 import 'package:shonenx/features/settings/presentation/source_settings_sheet.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
 import 'package:shonenx/source_engine/models/source_info.dart';
@@ -93,10 +94,39 @@ class SourceSelectorList extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'You are viewing anime through the built-in Public API. You can switch to any installed extension below.',
+                        'You are viewing anime through the built-in Public API. You can switch to any installed extension below or get more.',
                         style: textTheme.bodySmall?.copyWith(
                           color: cs.onSurfaceVariant,
                           height: 1.25,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          context.pushSettingsExtensions();
+                        },
+                        borderRadius: BorderRadius.circular(6),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Browse Extensions Catalog',
+                                style: textTheme.labelSmall?.copyWith(
+                                  color: cs.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 14,
+                                color: cs.primary,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -325,6 +355,23 @@ class SourceSelectorList extends ConsumerWidget {
           },
         );
       },
+    ),
+  ),
+  Padding(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+    child: OutlinedButton.icon(
+      onPressed: () {
+        Navigator.of(context).pop();
+        context.pushSettingsExtensions();
+      },
+      icon: const Icon(Icons.extension_outlined, size: 20),
+      label: const Text('Manage & Discover Extensions'),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
     ),
   ),
 ],

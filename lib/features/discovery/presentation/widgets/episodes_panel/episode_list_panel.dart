@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:shonenx/core/router/app_navigator.dart';
 import 'package:shonenx/core/utils/responsive.dart';
 import 'package:shonenx/features/discovery/domain/media_args.dart';
 import 'package:shonenx/features/discovery/presentation/widgets/episodes_panel/episode_tiles.dart';
@@ -11,7 +12,10 @@ import 'package:shonenx/features/reader/providers/preferred_scanlator_provider.d
 import 'package:shonenx/shared/models/unified_episode.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
 import 'package:shonenx/shared/providers/ui_prefs_provider.dart';
+import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
+import 'package:shonenx/shared/widgets/source_selector_list.dart';
 import 'package:shonenx/shared/widgets/staggered_fade_in.dart';
+import 'package:shonenx/source_engine/utils/media_type_extensions.dart';
 import 'package:shonenx/core/network/cf_client.dart';
 import 'package:shonenx/features/discovery/providers/media_preference_provider.dart';
 import 'package:shonenx/source_engine/models/source_info.dart';
@@ -120,6 +124,58 @@ class _EpisodeListPanelState extends ConsumerState<EpisodeListPanel> {
         });
       }
     });
+  }
+
+  void _showSourceSelector(BuildContext context, MediaArgs matchArgs) {
+    final availableSources =
+        ref.read(widget.media.type.availableSourcesProvider).value ?? [];
+    final currentPref = ref.read(mediaPreferenceProvider(matchArgs)).value;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return AppBottomSheet(
+          title: 'Select Source / Extension',
+          child: SourceSelectorList(
+            availableSources: availableSources,
+            currentSource: currentPref?.sourceInfo,
+            mediaType: widget.media.type,
+            onSourceSelected: (ctx, source) {
+              ref
+                  .read(mediaPreferenceProvider(matchArgs).notifier)
+                  .updateSource(source);
+              ref.invalidate(matchedMediaProvider(matchArgs));
+              ref.invalidate(episodesListProvider(matchArgs));
+              if (widget.media.sourceId != null) {
+                ref.invalidate(
+                  sourceEpisodesProvider((
+                    providerId: widget.media.id,
+                    sourceId: widget.media.sourceId!,
+                    type: widget.media.type,
+                  )),
+                );
+              }
+              Navigator.pop(sheetContext);
+            },
+            onSettingsClosed: () {
+              ref.invalidate(matchedMediaProvider(matchArgs));
+              ref.invalidate(episodesListProvider(matchArgs));
+              if (widget.media.sourceId != null) {
+                ref.invalidate(
+                  sourceEpisodesProvider((
+                    providerId: widget.media.id,
+                    sourceId: widget.media.sourceId!,
+                    type: widget.media.type,
+                  )),
+                );
+              }
+            },
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -287,16 +343,33 @@ class _EpisodeListPanelState extends ConsumerState<EpisodeListPanel> {
                   ),
                   const SizedBox(height: 8),
                 ],
-                ElevatedButton.icon(
-                  onPressed: isBusy ? null : () => _triggerRetry(matchArgs),
-                  icon: isBusy
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.refresh_rounded),
-                  label: Text(isBusy ? 'Fetching...' : 'Retry Search'),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: isBusy ? null : () => _triggerRetry(matchArgs),
+                      icon: isBusy
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.refresh_rounded),
+                      label: Text(isBusy ? 'Fetching...' : 'Retry Search'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () => _showSourceSelector(context, matchArgs),
+                      icon: const Icon(Icons.swap_horiz_rounded),
+                      label: const Text('Switch Source / Extension'),
+                    ),
+                    TextButton.icon(
+                      onPressed: () => context.pushSettingsExtensions(),
+                      icon: const Icon(Icons.extension_rounded),
+                      label: const Text('Browse Extensions'),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -363,16 +436,33 @@ class _EpisodeListPanelState extends ConsumerState<EpisodeListPanel> {
                     ),
                   ],
                   const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: isBusy ? null : () => _triggerRetry(matchArgs),
-                    icon: isBusy
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.refresh_rounded),
-                    label: Text(isBusy ? 'Fetching...' : 'Retry Fetching'),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: isBusy ? null : () => _triggerRetry(matchArgs),
+                        icon: isBusy
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.refresh_rounded),
+                        label: Text(isBusy ? 'Fetching...' : 'Retry Fetching'),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () => _showSourceSelector(context, matchArgs),
+                        icon: const Icon(Icons.swap_horiz_rounded),
+                        label: const Text('Switch Source / Extension'),
+                      ),
+                      TextButton.icon(
+                        onPressed: () => context.pushSettingsExtensions(),
+                        icon: const Icon(Icons.extension_rounded),
+                        label: const Text('Browse Extensions'),
+                      ),
+                    ],
                   ),
                 ],
               ),
