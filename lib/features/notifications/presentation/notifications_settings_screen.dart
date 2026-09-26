@@ -25,30 +25,118 @@ class NotificationsSettingsScreen extends ConsumerWidget {
         return timeA.compareTo(timeB);
       });
 
+    Future<void> syncWatching() async {
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Scanning library for watching anime...'),
+          duration: Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      final count = await ref
+          .read(notificationSubscriptionsProvider.notifier)
+          .syncWatchingLibraryEntries();
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            count > 0
+                ? 'Scheduled episode countdown alerts for $count anime!'
+                : 'Watching list is up-to-date with airing alerts.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
+    final syncCard = Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  color: theme.colorScheme.primary,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Auto-Sync Airing Schedules',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Automatically scan your "Watching" and "Planning" library titles to schedule exact alarm alerts and countdowns.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.tonalIcon(
+                onPressed: syncWatching,
+                icon: const Icon(Icons.sync_rounded, size: 18),
+                label: const Text('Sync Watching Anime Alerts'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
     return AppScaffold(
       title: 'Manage Anime Notifications',
-      body: subscriptions.isEmpty
-          ? Center(
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.sync_rounded),
+          tooltip: 'Sync Watching Anime',
+          onPressed: syncWatching,
+        ),
+      ],
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          syncCard,
+          if (subscriptions.isEmpty)
+            Center(
               child: Padding(
-                padding: const EdgeInsets.all(32.0),
+                padding: const EdgeInsets.symmetric(vertical: 32.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.notifications_off_outlined,
-                      size: 64,
+                      size: 56,
                       color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Text(
                       'No Subscriptions Yet',
-                      style: theme.textTheme.titleLarge,
+                      style: theme.textTheme.titleMedium,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(
-                      'You can enable notifications for upcoming episodes directly from the anime details page.',
+                      'Tap "Sync Watching Anime Alerts" above or tap the bell icon on any anime details page.',
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium?.copyWith(
+                      style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
@@ -56,32 +144,31 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                 ),
               ),
             )
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                if (upcoming.isNotEmpty) ...[
-                  Text(
-                    'Upcoming',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ...upcoming.map((sub) => _SubscriptionTile(subscription: sub)),
-                  const SizedBox(height: 24),
-                ],
-                Text(
-                  'All Subscriptions',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
+          else ...[
+            if (upcoming.isNotEmpty) ...[
+              Text(
+                'Upcoming Releases',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 8),
-                ...subscriptions.map((sub) => _SubscriptionTile(subscription: sub)),
-              ],
+              ),
+              const SizedBox(height: 8),
+              ...upcoming.map((sub) => _SubscriptionTile(subscription: sub)),
+              const SizedBox(height: 24),
+            ],
+            Text(
+              'All Airing Alerts (${subscriptions.length})',
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
+            const SizedBox(height: 8),
+            ...subscriptions.map((sub) => _SubscriptionTile(subscription: sub)),
+          ],
+        ],
+      ),
     );
   }
 }

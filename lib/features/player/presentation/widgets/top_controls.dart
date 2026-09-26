@@ -9,6 +9,7 @@ import 'package:shonenx/features/player/domain/player_mode.dart';
 import 'package:shonenx/features/settings/presentation/widgets/subtitle_settings_sheet.dart';
 import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
 import 'package:shonenx/shared/models/video_stream.dart';
+import 'package:shonenx/features/player/syncplay/presentation/syncplay_sheet.dart';
 
 class TopControls extends ConsumerWidget {
   final bool showControls;
@@ -56,6 +57,20 @@ class TopControls extends ConsumerWidget {
       ],
       if (mode is PlayerModeOnline && onComments != null) ...[
         _buildActionIcon(icon: Icons.comment_outlined, onTap: onComments!),
+        const SizedBox(width: 6),
+      ],
+      if (mode is PlayerModeOnline) ...[
+        _buildActionIcon(
+          icon: Icons.group_rounded,
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const SyncPlaySheet(),
+            );
+          },
+        ),
         const SizedBox(width: 6),
       ],
       _buildActionIcon(

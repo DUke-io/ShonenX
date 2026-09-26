@@ -5,6 +5,9 @@ import 'package:shonenx/features/reader/domain/reader_mode.dart';
 import 'package:shonenx/features/tracking/engine/sync_engine.dart';
 import 'package:shonenx/source_engine/models/chapter_page.dart';
 import 'package:shonenx/source_engine/source_engine_provider.dart';
+import 'package:shonenx/core/services/precache_service.dart';
+import 'package:shonenx/features/discovery/domain/media_args.dart';
+import 'package:shonenx/features/discovery/providers/episodes_provider.dart';
 
 class ReaderState {
   final ReaderModeOnline mode;
@@ -59,11 +62,16 @@ class ReaderNotifier extends Notifier<ReaderState> {
     );
   }
 
+  bool _hasPrecachedNextChapter = false;
+
   Future<void> _fetchPages(ReaderModeOnline mode) async {
     state = state.copyWith(pages: const AsyncValue.loading());
     try {
       final source = ref.read(mangaSourceProvider(mode.sourceInfo));
-      final pageList = await source.getPages(mode.episode.id);
+      final cached = ref.read(precacheServiceProvider).getCachedPages(mode.episode.id);
+      final pageList = cached != null && cached.isNotEmpty
+          ? cached
+          : await source.getPages(mode.episode.id);
 
       if (pageList.isEmpty) {
         state = state.copyWith(
@@ -100,6 +108,32 @@ class ReaderNotifier extends Notifier<ReaderState> {
 
     state = state.copyWith(currentPage: page);
     _saveHistory(page, state.totalPages);
+
+    // Pre-cache next chapter's pages in background after user reads into current chapter
+    if (page >= 2 && !_hasPrecachedNextChapter) {
+      _hasPrecachedNextChapter = true;
+      _precacheNextChapter();
+    }
+  }
+
+  Future<void> _precacheNextChapter() async {
+    try {
+      final episodes = await ref.read(
+        episodesListProvider(
+          MediaArgs.fromMedia(arg.media),
+        ).selectAsync((s) => s.episodes),
+      );
+
+      final currentIndex = episodes.indexWhere((e) => e.id == arg.episode.id);
+      if (currentIndex != -1 && currentIndex < episodes.length - 1) {
+        final nextChapter = episodes[currentIndex + 1];
+        final source = ref.read(mangaSourceProvider(arg.sourceInfo));
+        await ref.read(precacheServiceProvider).precacheNextChapter(
+          source: source,
+          chapterId: nextChapter.id,
+        );
+      }
+    } catch (_) {}
   }
 
   void toggleOverlay() {

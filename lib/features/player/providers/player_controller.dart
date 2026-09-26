@@ -29,6 +29,9 @@ import 'package:shonenx/shared/models/video_server.dart';
 import 'package:shonenx/shared/models/video_stream.dart';
 import 'package:shonenx/source_engine/providers/anime_source.dart';
 import 'package:shonenx/source_engine/source_engine_provider.dart';
+import 'package:shonenx/features/debrid/domain/models/torrent_release.dart';
+import 'package:shonenx/features/debrid/providers/debrid_provider.dart';
+import 'package:shonenx/core/services/precache_service.dart';
 
 // Sentinel object for copyWith error handling.
 // Needed because null is a valid error value (to clear error state).
@@ -118,6 +121,7 @@ class PlayerController extends Notifier<PlayerState> {
   bool _isDisposed = false;
   String? _offlineFilePath;
   Timer? _offlineProgressTimer;
+  bool _hasPrecachedNext = false;
 
   @override
   PlayerState build() {
@@ -238,6 +242,18 @@ class PlayerController extends Notifier<PlayerState> {
       final remaining = duration.inSeconds - position.inSeconds;
       if (remaining <= 0 || position.inSeconds >= duration.inSeconds) {
         skipEpisode();
+      }
+    }
+
+    // 3. Pre-cache next episode after 15s of smooth playback
+    if (position.inSeconds >= 15 && hasNextEpisode && _source != null && !_hasPrecachedNext) {
+      _hasPrecachedNext = true;
+      final nextEp = _getNextEpisode();
+      if (nextEp != null) {
+        ref.read(precacheServiceProvider).precacheNextEpisode(
+          source: _source!,
+          nextEpisode: nextEp,
+        );
       }
     }
   }
@@ -454,18 +470,25 @@ class PlayerController extends Notifier<PlayerState> {
     );
 
     try {
-      // Step 1: Fetch available video servers for this episode
+      // Step 1: Fetch available video servers for this episode (or use pre-cached)
+      final precache = ref.read(precacheServiceProvider).getCachedEpisode(episode.id);
       List<VideoServer> servers = state.servers;
       if (force || server == null || isNewEpisode) {
-        servers = await _source!.getServers(episode.id);
-        if (servers.isEmpty) throw Exception('No servers available.');
+        if (precache != null && precache.servers.isNotEmpty && !force) {
+          servers = precache.servers;
+        } else {
+          servers = await _source!.getServers(episode.id);
+          if (servers.isEmpty) throw Exception('No servers available.');
+        }
       }
 
       // Step 2: Pick server matching user's preferred type (sub/dub) or explicit choice
       final activeServer = _resolver.resolveServer(servers, explicit: server);
 
-      // Step 3: Fetch video stream mirrors from selected server
-      final streams = await _source!.getSources(episode.id, activeServer);
+      // Step 3: Fetch video stream mirrors from selected server (or use pre-cached)
+      final streams = (precache != null && precache.streams.isNotEmpty && !force)
+          ? precache.streams
+          : await _source!.getSources(episode.id, activeServer);
       if (streams.isEmpty) throw Exception('No streams available.');
 
       // Step 4: Pick stream matching preferred sub/dub type & quality settings
@@ -657,6 +680,56 @@ class PlayerController extends Notifier<PlayerState> {
     }
   }
 
+  /// Searches for high-bitrate torrent releases via AnimeTosho / Nyaa for the current episode
+  Future<List<TorrentRelease>> fetchDebridReleases() async {
+    final m = _media;
+    final ep = state.activeEpisode;
+    if (m == null || ep == null) return [];
+
+    final resolver = ref.read(debridStreamResolverProvider);
+    return await resolver.searchReleases(media: m, episode: ep);
+  }
+
+  /// Resolves an unrestricted raw 1080p/4K CDN stream via Real-Debrid / Torbox
+  /// and immediately streams it in the player at the current playback position.
+  Future<void> loadDebridStream(TorrentRelease release) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final resolver = ref.read(debridStreamResolverProvider);
+      final stream = await resolver.resolveStream(
+        release,
+        episodeNumber: state.activeEpisode?.number.toInt(),
+      );
+
+      if (stream == null) {
+        throw Exception('Failed to unrestrict Debrid stream for this release.');
+      }
+
+      final engine = ref.read(videoEngineProvider);
+      final currentPos = engine.currentPosition;
+
+      final updatedStreams = [stream, ...state.streams];
+
+      state = state.copyWith(
+        streams: updatedStreams,
+        activeStream: stream,
+        qualities: [stream],
+        activeQuality: stream,
+        isLoading: false,
+      );
+
+      await engine.initialize(
+        stream,
+        startAt: currentPos,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Debrid stream failed: $e',
+      );
+    }
+  }
+
   // Switch quality resolution while preserving current position
   Future<void> changeQuality(VideoStream newQuality) async {
     if (state.activeQuality?.quality == newQuality.quality &&
@@ -753,6 +826,7 @@ class PlayerController extends Notifier<PlayerState> {
     bool force = false,
   }) async {
     _alreadyAutoSkipped.clear();
+    _hasPrecachedNext = false;
     _endingSkipCooldown = false;
     _endingSkipCooldownTimer?.cancel();
     _progressTracker.resetThumbnail();
@@ -828,6 +902,17 @@ class PlayerController extends Notifier<PlayerState> {
         .read(episodesListProvider(MediaArgs.fromMedia(_media!)))
         .value
         ?.episodes;
+  }
+
+  UnifiedEpisode? _getNextEpisode() {
+    final list = _getEpisodesList();
+    if (list != null && state.activeEpisode != null) {
+      final idx = _findEpisodeIndex(list, state.activeEpisode!);
+      if (idx != -1 && idx < list.length - 1) {
+        return list[idx + 1];
+      }
+    }
+    return null;
   }
 
   Future<({bool success, String message})> takeAndShareScreenshot() async {

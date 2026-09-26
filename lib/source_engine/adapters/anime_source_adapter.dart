@@ -6,6 +6,7 @@ import 'package:shonenx/shared/models/video_server.dart';
 import 'package:shonenx/shared/models/video_stream.dart';
 import 'package:shonenx/source_engine/providers/anime_source.dart';
 import 'package:shonenx/source_engine/utils/parsers.dart';
+import 'package:shonenx/source_engine/utils/extension_sandbox.dart';
 import 'base_source_adapter.dart';
 
 class AnimeSourceAdapter extends BaseSourceAdapter implements AnimeSource {
@@ -80,8 +81,12 @@ class AnimeSourceAdapter extends BaseSourceAdapter implements AnimeSource {
       final url = lastPipe != -1 ? episodeId.substring(0, lastPipe) : episodeId;
       final epNum = lastPipe != -1 ? episodeId.substring(lastPipe + 1) : '1';
 
-      final videos = await source.methods.getVideoList(
-        bridge.DEpisode(url: url, episodeNumber: epNum),
+      final videos = await ExtensionSandbox.run(
+        sourceId: sourceInfo.id,
+        actionName: 'getVideoList',
+        action: () => source.methods.getVideoList(
+          bridge.DEpisode(url: url, episodeNumber: epNum),
+        ),
       );
 
       methodLog.d('streams=${videos.length}');

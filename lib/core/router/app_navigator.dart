@@ -44,6 +44,7 @@ extension AppNavigator on BuildContext {
   void pushSettingsTheme() => push('/settings/theme');
   void pushSettingsHome() => push('/settings/home');
   void pushSettingsPlayer() => push('/settings/player');
+  void pushSettingsDebrid() => push('/settings/debrid');
   void pushSettingsReader() => push('/settings/reader');
   void pushSettingsCache() => push('/settings/cache');
   void pushSettingsUi() => push('/settings/ui');

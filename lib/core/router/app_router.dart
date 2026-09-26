@@ -28,6 +28,7 @@ import 'package:shonenx/features/settings/presentation/download_settings_screen.
 import 'package:shonenx/features/settings/presentation/home_settings_screen.dart';
 import 'package:shonenx/features/settings/presentation/permissions_settings_screen.dart';
 import 'package:shonenx/features/settings/presentation/player_settings_screen.dart';
+import 'package:shonenx/features/debrid/presentation/debrid_settings_screen.dart';
 import 'package:shonenx/features/settings/presentation/settings_screen.dart';
 import 'package:shonenx/features/settings/presentation/reader_settings_screen.dart';
 import 'package:shonenx/features/settings/presentation/theme_settings_screen.dart';
@@ -315,6 +316,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'permissions',
             builder: (context, state) => const PermissionsSettingsScreen(),
+          ),
+          GoRoute(
+            path: 'debrid',
+            builder: (context, state) => const DebridSettingsScreen(),
           ),
           GoRoute(
             path: 'notifications',

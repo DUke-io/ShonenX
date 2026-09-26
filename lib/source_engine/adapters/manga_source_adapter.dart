@@ -4,6 +4,7 @@ import 'package:shonenx/core/utils/app_logger.dart';
 import 'package:shonenx/shared/models/unified_chapter.dart';
 import 'package:shonenx/source_engine/models/chapter_page.dart';
 import 'package:shonenx/source_engine/providers/manga_source.dart';
+import 'package:shonenx/source_engine/utils/extension_sandbox.dart';
 import 'base_source_adapter.dart';
 
 class MangaSourceAdapter extends BaseSourceAdapter implements MangaSource {
@@ -53,8 +54,12 @@ class MangaSourceAdapter extends BaseSourceAdapter implements MangaSource {
       final url = lastPipe != -1 ? chapterId.substring(0, lastPipe) : chapterId;
       final epNum = lastPipe != -1 ? chapterId.substring(lastPipe + 1) : '1';
 
-      final pages = await source.methods.getPageList(
-        bridge.DEpisode(url: url, episodeNumber: epNum),
+      final pages = await ExtensionSandbox.run(
+        sourceId: sourceInfo.id,
+        actionName: 'getPageList',
+        action: () => source.methods.getPageList(
+          bridge.DEpisode(url: url, episodeNumber: epNum),
+        ),
       );
 
       methodLog.d('pages=${pages.length}');

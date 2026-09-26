@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:shonenx/core/router/app_navigator.dart';
 import 'package:shonenx/features/calendar/domain/models/calendar_entry.dart';
+import 'package:shonenx/features/calendar/presentation/widgets/airing_countdown_badge.dart';
 import 'package:shonenx/features/calendar/providers/calendar_schedule_provider.dart';
 import 'package:shonenx/shared/models/ui_style_enums.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
@@ -212,27 +213,7 @@ class CalendarAiringCard extends ConsumerWidget {
                                   letterSpacing: -0.2,
                                 ),
                               ),
-                            if (countdownStr.isNotEmpty)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 1,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: cs.primary.withValues(alpha: 0.9),
-                                  borderRadius: BorderRadius.circular(
-                                    radius * 0.3,
-                                  ),
-                                ),
-                                child: Text(
-                                  countdownStr,
-                                  style: TextStyle(
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w900,
-                                    color: cs.onPrimary,
-                                  ),
-                                ),
-                              ),
+                            AiringCountdownBadge(entry: entry, compact: true),
                           ],
                         ),
                       ),

@@ -7,6 +7,7 @@ import 'package:shonenx/source_engine/models/source_info.dart';
 import 'package:shonenx/source_engine/models/source_setting.dart';
 import 'package:shonenx/source_engine/providers/media_source.dart';
 import 'package:shonenx/source_engine/utils/parsers.dart';
+import 'package:shonenx/source_engine/utils/extension_sandbox.dart';
 
 class _CacheEntry<T> {
   final T data;
@@ -266,9 +267,17 @@ abstract class BaseSourceAdapter implements MediaSource {
     final methodLog = log.child('getTrending');
     try {
       methodLog.i('page=$page');
-      bridge.Pages results = await source.methods.getPopular(page);
+      bridge.Pages results = await ExtensionSandbox.run(
+        sourceId: sourceInfo.id,
+        actionName: 'getPopular',
+        action: () => source.methods.getPopular(page),
+      );
       if (results.list.isEmpty) {
-        results = await source.methods.getLatestUpdates(page);
+        results = await ExtensionSandbox.run(
+          sourceId: sourceInfo.id,
+          actionName: 'getLatestUpdates',
+          action: () => source.methods.getLatestUpdates(page),
+        );
       }
       methodLog.d('results=${results.list.length}');
 
@@ -321,8 +330,12 @@ abstract class BaseSourceAdapter implements MediaSource {
     final url = lastPipe != -1 ? providerId.substring(0, lastPipe) : providerId;
     final title = lastPipe != -1 ? providerId.substring(lastPipe + 1) : '';
 
-    final detail = await source.methods.getDetail(
-      bridge.DMedia(url: url, title: title),
+    final detail = await ExtensionSandbox.run(
+      sourceId: sourceInfo.id,
+      actionName: 'getDetail',
+      action: () => source.methods.getDetail(
+        bridge.DMedia(url: url, title: title),
+      ),
     );
     _cache.set(cacheKey, detail);
     return detail;

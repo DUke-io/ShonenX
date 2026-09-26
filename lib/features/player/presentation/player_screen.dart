@@ -27,6 +27,7 @@ import 'package:shonenx/features/player/providers/video_engine_provider.dart';
 import 'package:shonenx/features/comments/presentation/widgets/comments_tab.dart';
 import 'package:shonenx/features/discord/providers/discord_rpc_provider.dart';
 import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
+import 'package:shonenx/features/player/syncplay/presentation/floating_reactions_overlay.dart';
 
 // Main video player screen.
 class PlayerScreen extends ConsumerStatefulWidget {
@@ -553,6 +554,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                     onSetSpeed: engine.setSpeed,
                   ),
                 ),
+                const FloatingReactionsOverlay(),
                 if (_lockControls)
                   _buildLockedOverlay()
                 else

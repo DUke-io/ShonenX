@@ -21,6 +21,8 @@ import 'package:shonenx/features/settings/presentation/widgets/subtitle_settings
 import 'package:shonenx/shared/models/video_server.dart';
 import 'package:shonenx/shared/models/video_stream.dart';
 import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
+import 'package:shonenx/features/debrid/presentation/debrid_release_sheet.dart';
+import 'package:shonenx/features/debrid/providers/debrid_provider.dart';
 
 class BottomControls extends ConsumerStatefulWidget {
   final bool showControls;
@@ -618,6 +620,24 @@ class _BottomControlsState extends ConsumerState<BottomControls> {
               widget.controller.changeStream(v);
             },
             displayText: widget.playerState.activeStream?.quality ?? 'Auto',
+          ),
+        ],
+
+        if (ref.watch(debridConfigProvider).isEnabled &&
+            widget.mode is PlayerModeOnline) ...[
+          const SizedBox(width: 14),
+          _buildActionIcon(
+            Icons.bolt_rounded,
+            () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                constraints: const BoxConstraints(maxWidth: double.infinity),
+                builder: (context) =>
+                    DebridReleaseSheet(controller: widget.controller),
+              );
+            },
           ),
         ],
 

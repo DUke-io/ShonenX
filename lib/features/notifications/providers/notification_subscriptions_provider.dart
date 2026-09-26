@@ -8,6 +8,7 @@ import 'package:shonenx/features/discovery/domain/media_preference.dart';
 import 'package:shonenx/features/notifications/domain/models/notification_subscription.dart';
 import 'package:shonenx/features/notifications/providers/airing_data_repository_provider.dart';
 import 'package:shonenx/features/tracking/domain/models/tracker_type.dart';
+import 'package:shonenx/features/library/domain/models/library_entry.dart';
 import 'package:shonenx/features/tracking/engine/remote_tracker.dart';
 import 'package:shonenx/features/tracking/providers/tracker_registry.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
@@ -321,5 +322,41 @@ class NotificationSubscriptionsNotifier
       });
       await _init();
     }
+  }
+
+  /// Automatically discovers active Watching/Planning anime in the user's library
+  /// and subscribes to countdown notifications for upcoming episodes.
+  Future<int> syncWatchingLibraryEntries() async {
+    int syncedCount = 0;
+    try {
+      final entries = await _isar.libraryEntrys
+          .where()
+          .filter()
+          .typeEqualTo('ANIME')
+          .and()
+          .group(
+            (q) => q
+                .statusEqualTo('CURRENT')
+                .or()
+                .statusEqualTo('WATCHING')
+                .or()
+                .statusEqualTo('PLANNING'),
+          )
+          .findAll();
+
+      for (final entry in entries) {
+        final subKey = _mapKey(SubscriptionType.animeAiring, entry.providerId);
+        final existing = state[subKey];
+        if (existing == null || !existing.isEnabled) {
+          final media = entry.toUnifiedMedia();
+          await toggleSubscription(media);
+          syncedCount++;
+        }
+      }
+      _log.i('Auto-synced $syncedCount watching library entries for airing alerts');
+    } catch (e, st) {
+      _log.e('Failed to auto-sync watching library entries', e, st);
+    }
+    return syncedCount;
   }
 }

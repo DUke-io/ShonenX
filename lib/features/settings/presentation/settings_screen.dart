@@ -37,6 +37,12 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () => context.pushSettingsPlayer(),
               ),
               SettingsNavTile(
+                icon: Icons.bolt_rounded,
+                title: 'Debrid & Torrent Streaming',
+                subtitle: 'Real-Debrid, Torbox, AnimeTosho high-bitrate raw stream',
+                onTap: () => context.pushSettingsDebrid(),
+              ),
+              SettingsNavTile(
                 icon: Icons.chrome_reader_mode_outlined,
                 title: 'Reader',
                 subtitle: 'Reading mode, background, scale',
