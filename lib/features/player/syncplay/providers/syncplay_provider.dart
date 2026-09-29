@@ -86,6 +86,7 @@ class SyncPlayNotifier extends Notifier<SyncPlayRoomState> {
         // If we are host, respond with joinAccept & current state
         if (state.isHost) {
           final engine = ref.read(videoEngineProvider);
+          final isPlaying = ref.read(videoEngineStateProvider).isPlaying;
           _service.sendMessage(
             SyncPlayMessage(
               type: SyncPlayMessageType.joinAccept,
@@ -93,7 +94,7 @@ class SyncPlayNotifier extends Notifier<SyncPlayRoomState> {
               senderName: _service.localUsername,
               timestamp: DateTime.now().millisecondsSinceEpoch,
               payload: {
-                'isPlaying': engine.isPlaying,
+                'isPlaying': isPlaying,
                 'positionMs': engine.currentPosition.inMilliseconds,
               },
             ),
@@ -153,9 +154,10 @@ class SyncPlayNotifier extends Notifier<SyncPlayRoomState> {
         await engine.seekTo(Duration(milliseconds: targetPosMs));
       }
 
-      if (isPlaying && !engine.isPlaying) {
+      final currentlyPlaying = ref.read(videoEngineStateProvider).isPlaying;
+      if (isPlaying && !currentlyPlaying) {
         await engine.play();
-      } else if (!isPlaying && engine.isPlaying) {
+      } else if (!isPlaying && currentlyPlaying) {
         await engine.pause();
       }
     } finally {
