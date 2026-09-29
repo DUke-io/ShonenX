@@ -34,6 +34,23 @@
         ]
       },
       {
+        "name": "Hstream (18+)",
+        "lang": "en",
+        "baseUrl": "https://hstream.moe",
+        "type": "anime",
+        "status": "active",
+        "quality": [
+          "1080p",
+          "720p"
+        ],
+        "features": [
+          "DASH Streaming",
+          "1080p AV1",
+          "Adult Content",
+          "CDN Mirrors"
+        ]
+      },
+      {
         "name": "Ronin API",
         "lang": "en",
         "baseUrl": "https://github.com/Zcross091/Ronin-API",
