@@ -178,6 +178,21 @@ class _AppUpdateDownloaderWidgetState extends State<AppUpdateDownloaderWidget> {
         }
       }
 
+      if (Platform.isWindows && file.path.endsWith('.exe')) {
+        try {
+          await Process.start(file.path, [], mode: ProcessStartMode.detached);
+          if (mounted) {
+            setState(() {
+              _statusMessage =
+                  'Installer launched! Please complete the setup wizard.';
+            });
+          }
+          return;
+        } catch (_) {
+          // Fall back to OpenFile
+        }
+      }
+
       final result = await OpenFile.open(file.path);
       if (mounted && result.type != ResultType.done) {
         setState(() {
