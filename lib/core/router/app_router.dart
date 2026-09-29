@@ -46,7 +46,7 @@ import 'package:shonenx/features/settings/presentation/troubleshoot_settings_scr
 import 'package:shonenx/core/services/backup_service.dart';
 import 'package:shonenx/features/security/presentation/app_lock_screen.dart';
 import 'package:shonenx/features/security/presentation/security_settings_screen.dart';
-import 'package:shonenx/features/settings/presentation/p2p_sync_settings_screen.dart';
+import 'package:shonenx/features/settings/presentation/google_drive_sync_settings_screen.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
 import 'package:shonenx/core/network/cf_client.dart';
 
@@ -400,7 +400,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: 'sync',
-            builder: (context, state) => const P2PSyncSettingsScreen(),
+            builder: (context, state) => const GoogleDriveSyncSettingsScreen(),
           ),
           GoRoute(
             path: 'troubleshoot',

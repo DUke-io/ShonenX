@@ -100,9 +100,9 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () => context.pushSettingsBackup(),
               ),
               SettingsNavTile(
-                icon: Icons.hub_outlined,
-                title: 'P2P Device Sync',
-                subtitle: 'Account recovery, device sync & Seeder Data',
+                icon: Icons.cloud_sync_outlined,
+                title: 'Google Drive Sync',
+                subtitle: 'Google account login, drive directory & cloud backup',
                 onTap: () => context.pushSettingsSync(),
               ),
             ],

@@ -192,6 +192,37 @@ class _BackupSettingsScreenState extends ConsumerState<BackupSettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 50),
         children: [
+          // Google Drive Sync Banner
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: Card(
+              elevation: 0,
+              color: cs.primaryContainer.withValues(alpha: 0.35),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: cs.primary.withValues(alpha: 0.3)),
+              ),
+              child: ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                leading: CircleAvatar(
+                  backgroundColor: cs.primary,
+                  child: const Icon(Icons.cloud_sync_rounded, color: Colors.white),
+                ),
+                title: const Text(
+                  'Google Drive Sync & Folder Backup',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text(
+                  'Log into Google, choose a directory, and sync data seamlessly',
+                  style: TextStyle(fontSize: 12),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushSettingsSync(),
+              ),
+            ),
+          ),
+
           // Cloud & WebDAV Auto-Sync Section
           SettingsSection(
             title: 'Automated Cloud & WebDAV Backup',

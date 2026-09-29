@@ -20,6 +20,7 @@ import 'package:shonenx/core/theme/app_theme.dart';
 import 'package:shonenx/core/utils/app_logger.dart';
 import 'package:shonenx/features/discord/providers/discord_rpc_provider.dart';
 import 'package:shonenx/features/backup/providers/cloud_sync_provider.dart';
+import 'package:shonenx/features/sync/providers/google_drive_sync_provider.dart';
 import 'package:shonenx/shared/widgets/global_background.dart';
 
 final _log = AppLogger.scope('Main');
@@ -144,6 +145,7 @@ class ShonenXApp extends ConsumerWidget {
     // Silent background auto-sync check on launch
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(cloudSyncConfigProvider.notifier).checkAndRunScheduledSync();
+      ref.read(googleDriveSyncProvider.notifier).checkAndRunScheduledSync();
     });
 
     final themePrefs = ref.watch(themePrefsProvider);

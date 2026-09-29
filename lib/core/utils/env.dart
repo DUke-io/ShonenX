@@ -44,6 +44,16 @@ class Env {
     'SIMKL_CLIENT_SECRET',
   );
 
+  static const GOOGLE_CLIENT_ID = String.fromEnvironment(
+    'GOOGLE_CLIENT_ID',
+    defaultValue: '739486820491-kuroxdevcloudsync.apps.googleusercontent.com',
+  );
+
+  static const GOOGLE_CLIENT_SECRET = String.fromEnvironment(
+    'GOOGLE_CLIENT_SECRET',
+    defaultValue: '',
+  );
+
   // helpers
   static List<String> get ANILIST_CLIENT_ID_LIST =>
       ANILIST_CLIENT_ID.split('|');
