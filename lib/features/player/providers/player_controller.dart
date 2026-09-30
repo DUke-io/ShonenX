@@ -32,6 +32,8 @@ import 'package:shonenx/source_engine/source_engine_provider.dart';
 import 'package:shonenx/features/debrid/domain/models/torrent_release.dart';
 import 'package:shonenx/features/debrid/providers/debrid_provider.dart';
 import 'package:shonenx/core/services/precache_service.dart';
+import 'package:shonenx/core/network/stream_server/stream_server.dart';
+import 'package:shonenx/core/network/stream_server/hls/hls_stream.dart';
 
 // Sentinel object for copyWith error handling.
 // Needed because null is a valid error value (to clear error state).
@@ -122,6 +124,7 @@ class PlayerController extends Notifier<PlayerState> {
   String? _offlineFilePath;
   Timer? _offlineProgressTimer;
   bool _hasPrecachedNext = false;
+  String? _currentHlsStreamId;
 
   @override
   PlayerState build() {
@@ -537,11 +540,29 @@ class PlayerController extends Notifier<PlayerState> {
       }
 
       // Step 8: Initialize video engine with selected quality and subtitle track
+      var activeStream = qualityResult.active;
+      if (activeStream.requiresProxy) {
+        final server = ref.read(streamServerProvider);
+        if (_currentHlsStreamId != null) {
+          server.unregister(_currentHlsStreamId!);
+        }
+        final id = DateTime.now().millisecondsSinceEpoch.toString();
+        _currentHlsStreamId = id;
+        final localUrl = await server.register(
+          HlsStream(
+            id: id,
+            upstreamUrl: activeStream.url,
+            headers: activeStream.headers ?? {},
+          ),
+        );
+        activeStream = activeStream.copyWith(url: localUrl);
+      }
+
       final useCustomSub = ref.read(subtitlePrefsProvider).useCustomSubtitle;
       await ref
           .read(videoEngineProvider)
           .initialize(
-            qualityResult.active,
+            activeStream,
             subtitle: useCustomSub || activeSubtitle.url.isEmpty
                 ? null
                 : activeSubtitle,

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shonenx/core/network/doh/doh_provider.dart';
+import 'package:shonenx/core/network/doh/doh_resolver.dart';
 import 'package:shonenx/features/security/domain/security_prefs.dart';
 import 'package:shonenx/features/security/presentation/app_lock_screen.dart';
 import 'package:shonenx/features/security/providers/security_provider.dart';
 import 'package:shonenx/features/settings/presentation/widgets/settings_ui_components.dart';
+import 'package:shonenx/shared/providers/doh_prefs_provider.dart';
 import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
 
 class SecuritySettingsScreen extends ConsumerWidget {
@@ -13,8 +16,10 @@ class SecuritySettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final securityPrefs = ref.watch(securityPrefsProvider);
+    final dohPrefs = ref.watch(dohPrefsProvider);
     final notifier = ref.read(securityPrefsProvider.notifier);
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -126,6 +131,81 @@ class SecuritySettingsScreen extends ConsumerWidget {
             ],
           ),
 
+          const SizedBox(height: 16),
+          // Network & DNS (DoH) Section
+          SettingsSection(
+            title: 'Network & DNS (DoH)',
+            subtitle:
+                'Bypass ISP blocking, domain throttling and censorship with encrypted DNS',
+            children: [
+              Card(
+                elevation: 0,
+                color: cs.surfaceContainerHighest.withValues(alpha: 0.4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: cs.outlineVariant.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.dns_rounded, color: cs.primary, size: 22),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'DNS Provider',
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                                Text(
+                                  dohPrefs.provider.description,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: cs.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          DropdownButton<DohProvider>(
+                            value: dohPrefs.provider,
+                            underline: const SizedBox(),
+                            borderRadius: BorderRadius.circular(14),
+                            items: DohProvider.values
+                                .map(
+                                  (p) => DropdownMenuItem(
+                                    value: p,
+                                    child: Text(
+                                      p.title,
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                ref.read(dohPrefsProvider.notifier).setProvider(val);
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 16),
+                      const _DohTestWidget(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
           const SizedBox(height: 24),
           // Information Box
           Container(
@@ -212,3 +292,145 @@ class SecuritySettingsScreen extends ConsumerWidget {
     );
   }
 }
+
+class _DohTestWidget extends ConsumerStatefulWidget {
+  const _DohTestWidget();
+
+  @override
+  ConsumerState<_DohTestWidget> createState() => _DohTestWidgetState();
+}
+
+class _DohTestWidgetState extends ConsumerState<_DohTestWidget> {
+  bool _isTesting = false;
+  DohTestResult? _result;
+
+  Future<void> _runTest() async {
+    setState(() {
+      _isTesting = true;
+      _result = null;
+    });
+
+    final currentProvider = ref.read(dohPrefsProvider).provider;
+    final res = await DohResolver.instance.testLookup(provider: currentProvider);
+
+    if (mounted) {
+      setState(() {
+        _isTesting = false;
+        _result = res;
+      });
+    }
+  }
+
+  void _clearDnsCache() {
+    DohResolver.instance.clearCache();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('DNS cache flushed successfully'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final textTheme = theme.textTheme;
+    final dohPrefs = ref.watch(dohPrefsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: FilledButton.tonalIcon(
+                onPressed: _isTesting ? null : _runTest,
+                icon: _isTesting
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.speed_rounded, size: 16),
+                label: Text(
+                  _isTesting ? 'Testing...' : 'Test DNS Resolution',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton.filledTonal(
+              tooltip: 'Flush DNS Cache',
+              onPressed: _clearDnsCache,
+              icon: const Icon(Icons.cleaning_services_outlined, size: 16),
+              visualDensity: VisualDensity.compact,
+            ),
+          ],
+        ),
+        if (_result != null) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: _result!.success
+                  ? Colors.green.withValues(alpha: 0.1)
+                  : Colors.red.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: _result!.success
+                    ? Colors.green.withValues(alpha: 0.3)
+                    : Colors.red.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      _result!.success
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.error_outline_rounded,
+                      size: 16,
+                      color: _result!.success ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _result!.success
+                          ? '${dohPrefs.provider.title} (${_result!.latencyMs} ms)'
+                          : 'Test Failed',
+                      style: textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: _result!.success ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+                if (_result!.success && _result!.addresses.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Resolved IPs: ${_result!.addresses.take(3).join(', ')}',
+                    style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+                  ),
+                ],
+                if (!_result!.success && _result!.errorMessage != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _result!.errorMessage!,
+                    style: const TextStyle(fontSize: 11, color: Colors.red),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+

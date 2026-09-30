@@ -72,6 +72,10 @@ class MediaKitEngine implements VideoEngine {
         : prefs.maxBuffer.inSeconds.toString();
     await setPropSafe('cache-secs', readaheadSecs);
     await setPropSafe('demuxer-readahead-secs', readaheadSecs);
+    await setPropSafe('cache-on-disk', 'no');
+    await setPropSafe('autosync', '30');
+    await setPropSafe('framedrop', 'no');
+    await setPropSafe('seg_max_retry', '5');
 
     await setPropSafe('brightness', prefs.colorPreset.brightness.toString());
     await setPropSafe('contrast', prefs.colorPreset.contrast.toString());

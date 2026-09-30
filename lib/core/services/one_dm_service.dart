@@ -43,6 +43,8 @@ class OneDMService {
     required String url,
     String? fileName,
     Map<String, String>? headers,
+    List<String>? subtitleUrls,
+    List<String>? subtitleFileNames,
   }) async {
     if (!Platform.isAndroid) {
       return false;
@@ -53,6 +55,8 @@ class OneDMService {
     if (package == null) {
       return false;
     }
+
+    final hasSubtitles = subtitleUrls != null && subtitleUrls.isNotEmpty;
 
     final intent = AndroidIntent(
       action: 'android.intent.action.VIEW',
@@ -67,8 +71,18 @@ class OneDMService {
           'extra_filename': fileName,
           'com.android.extra.filename': fileName,
         },
-
-        if (headers != null) 'android.media.intent.extra.HTTP_HEADERS': headers,
+        if (hasSubtitles) ...{
+          'subs': subtitleUrls,
+          'subs.filename': subtitleFileNames ?? subtitleUrls,
+          'subs.name': subtitleFileNames ?? subtitleUrls,
+          'video_list': [url],
+          'video_list.filename': [if (fileName != null) fileName],
+          'video_list.name': [if (fileName != null) fileName],
+        },
+        if (headers != null) ...{
+          'android.media.intent.extra.HTTP_HEADERS': headers,
+          'extra_headers': headers,
+        },
       },
     );
 
@@ -100,7 +114,11 @@ class OneDMService {
       arguments: {
         'url_list': urls,
         'url_list.filename': fileNames,
-        if (headers != null) 'android.media.intent.extra.HTTP_HEADERS': headers,
+        'url_list.name': fileNames,
+        if (headers != null) ...{
+          'android.media.intent.extra.HTTP_HEADERS': headers,
+          'extra_headers': headers,
+        },
       },
     );
 
