@@ -9,13 +9,33 @@ import 'package:shonenx/core/utils/app_logger.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
 
 class DiscordRpcService {
-  static const String applicationId = '1435544312296505394';
+  static const String defaultApplicationId = '1435544312296505394';
+  String applicationId = defaultApplicationId;
+  String? customAppIconKey;
+
   static const String _gatewayUrl =
       'wss://gateway.discord.gg/?v=10&encoding=json';
   static const String _appIconUrl =
-      'https://raw.githubusercontent.com/Zcross091/KuroX/main/assets/images/app_icon.png';
+      'https://cdn.jsdelivr.net/gh/Zcross091/KuroX@main/assets/images/app_icon_rpc.png';
+  static const String _fallbackAppIconUrl =
+      'https://raw.githubusercontent.com/Zcross091/KuroX/main/assets/images/app_icon_rpc.png';
 
   final _log = AppLogger.scope(DiscordRpcService);
+
+  void configureSettings(dynamic settings) {
+    if (settings != null) {
+      final customAppId = settings.customApplicationId as String?;
+      if (customAppId != null && customAppId.trim().isNotEmpty) {
+        applicationId = customAppId.trim();
+      } else {
+        applicationId = defaultApplicationId;
+      }
+      final customKey = settings.customAppIconKey as String?;
+      customAppIconKey = (customKey != null && customKey.trim().isNotEmpty)
+          ? customKey.trim()
+          : null;
+    }
+  }
 
   bool _isDesktopInitialized = false;
   bool _hasDesktopIpcFailed = false;
@@ -199,39 +219,48 @@ class DiscordRpcService {
   static const String _defaultAssetKey = 'app_icon';
 
   Future<String> _processImageUrl(String? url) async {
-    if (url == null || url.isEmpty) return _defaultAssetKey;
-    if (_token == null || _token!.isEmpty) return _defaultAssetKey;
-    if (_assetCache.containsKey(url)) return _assetCache[url]!;
+    final effectiveUrl = (url != null && url.isNotEmpty)
+        ? url
+        : (customAppIconKey ?? _appIconUrl);
 
-    try {
-      final response = await http
-          .post(
-            Uri.parse(
-              'https://discord.com/api/v9/applications/$applicationId/external-assets',
-            ),
-            headers: {
-              'Authorization': _token!,
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode({
-              'urls': [url],
-            }),
-          )
-          .timeout(const Duration(seconds: 3));
-
-      if (response.statusCode == 200) {
-        final List data = jsonDecode(response.body);
-        if (data.isNotEmpty && data[0]['external_asset_path'] != null) {
-          final assetPath = 'mp:${data[0]['external_asset_path']}';
-          _assetCache[url] = assetPath;
-          return assetPath;
-        }
-      }
-    } catch (e, s) {
-      _log.w('Error registering external asset: $url', e, s);
+    // If it's a raw asset key (e.g. uploaded in Discord Developer Portal), return directly
+    if (!effectiveUrl.startsWith('http://') && !effectiveUrl.startsWith('https://')) {
+      return effectiveUrl;
     }
 
-    return _defaultAssetKey;
+    if (_token != null && _token!.isNotEmpty) {
+      if (_assetCache.containsKey(effectiveUrl)) return _assetCache[effectiveUrl]!;
+
+      try {
+        final response = await http
+            .post(
+              Uri.parse(
+                'https://discord.com/api/v9/applications/$applicationId/external-assets',
+              ),
+              headers: {
+                'Authorization': _token!,
+                'Content-Type': 'application/json',
+              },
+              body: jsonEncode({
+                'urls': [effectiveUrl],
+              }),
+            )
+            .timeout(const Duration(seconds: 3));
+
+        if (response.statusCode == 200) {
+          final List data = jsonDecode(response.body);
+          if (data.isNotEmpty && data[0]['external_asset_path'] != null) {
+            final assetPath = 'mp:${data[0]['external_asset_path']}';
+            _assetCache[effectiveUrl] = assetPath;
+            return assetPath;
+          }
+        }
+      } catch (e, s) {
+        _log.w('Error registering external asset: $effectiveUrl', e, s);
+      }
+    }
+
+    return effectiveUrl;
   }
 
   void _dispatchPresence({
@@ -313,9 +342,9 @@ class DiscordRpcService {
       state: stateString,
       timestamps: RPCTimestamps(start: startTimeMs, end: endTimeMs),
       assets: RPCAssets(
-        largeImage: coverUrl ?? _appIconUrl,
+        largeImage: customAppIconKey ?? (coverUrl ?? _appIconUrl),
         largeText: title,
-        smallImage: _appIconUrl,
+        smallImage: customAppIconKey ?? _appIconUrl,
         smallText: 'KuroX',
       ),
       buttons: [
@@ -473,9 +502,9 @@ class DiscordRpcService {
       state: '$chString$pageString',
       timestamps: RPCTimestamps(start: _mediaStartTimeMs),
       assets: RPCAssets(
-        largeImage: coverUrl ?? _appIconUrl,
+        largeImage: customAppIconKey ?? (coverUrl ?? _appIconUrl),
         largeText: title,
-        smallImage: _appIconUrl,
+        smallImage: customAppIconKey ?? _appIconUrl,
         smallText: 'KuroX',
       ),
       buttons: [
@@ -549,9 +578,9 @@ class DiscordRpcService {
       state: 'Inspecting $typeStr Details',
       timestamps: RPCTimestamps(start: _mediaStartTimeMs),
       assets: RPCAssets(
-        largeImage: coverUrl ?? _appIconUrl,
+        largeImage: customAppIconKey ?? (coverUrl ?? _appIconUrl),
         largeText: title,
-        smallImage: _appIconUrl,
+        smallImage: customAppIconKey ?? _appIconUrl,
         smallText: 'KuroX',
       ),
       buttons: [
@@ -623,8 +652,8 @@ class DiscordRpcService {
       details: activity ?? 'Glazing KuroX',
       state: details ?? 'Browsing Catalog',
       timestamps: RPCTimestamps(start: _browsingStartTimeMs),
-      assets: const RPCAssets(
-        largeImage: _appIconUrl,
+      assets: RPCAssets(
+        largeImage: customAppIconKey ?? _appIconUrl,
         largeText: 'KuroX - Anime & Manga Client',
       ),
       buttons: const [

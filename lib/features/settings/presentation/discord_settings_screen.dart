@@ -73,6 +73,67 @@ class DiscordSettingsScreen extends ConsumerWidget {
     );
   }
 
+  void _showEditAppConfigSheet(
+    BuildContext context,
+    WidgetRef ref,
+    DiscordRpcCustomSettings settings,
+  ) {
+    final appIdController = TextEditingController(
+      text: settings.customApplicationId ?? '',
+    );
+    final assetKeyController = TextEditingController(
+      text: settings.customAppIconKey ?? '',
+    );
+
+    AppBottomSheet.show(
+      context: context,
+      title: 'Discord App & Logo Configuration',
+      titleIcon: Icons.tune_rounded,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: appIdController,
+            decoration: const InputDecoration(
+              labelText: 'Custom Application ID (Client ID)',
+              hintText: 'Default: 1435544312296505394',
+              helperText: 'Create your app at discord.com/developers',
+            ),
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: assetKeyController,
+            decoration: const InputDecoration(
+              labelText: 'Rich Presence Art Asset Key',
+              hintText: 'e.g. app_icon (Leave blank for CDN)',
+              helperText: 'Key of asset uploaded in Discord Developer Portal',
+            ),
+          ),
+          const SizedBox(height: 20),
+          FilledButton(
+            onPressed: () {
+              final newAppId = appIdController.text.trim();
+              final newAssetKey = assetKeyController.text.trim();
+              ref
+                  .read(discordRpcProvider.notifier)
+                  .updateCustomSettings(
+                    settings.copyWith(
+                      customApplicationId:
+                          newAppId.isNotEmpty ? newAppId : null,
+                      customAppIconKey:
+                          newAssetKey.isNotEmpty ? newAssetKey : null,
+                    ),
+                  );
+              Navigator.of(context).pop();
+            },
+            child: const Text('Save Configuration'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _confirmDisconnect(BuildContext context, WidgetRef ref) {
     AppDialog.show(
       context: context,
@@ -388,6 +449,29 @@ class DiscordSettingsScreen extends ConsumerWidget {
                       user: discordState.user,
                       settings: settings,
                     ),
+                  ),
+
+                if (rpcState.isEnabled)
+                  SettingsSection(
+                    title: 'Presence Customization',
+                    children: [
+                      SettingsTile(
+                        icon: Icons.edit_note_rounded,
+                        title: 'Customize Idle Status',
+                        subtitle:
+                            '${settings.idleActivity} • ${settings.idleDetails}',
+                        onTap: () => _showEditIdleSheet(context, ref, settings),
+                      ),
+                      SettingsTile(
+                        icon: Icons.tune_rounded,
+                        title: 'Discord App & Logo Configuration',
+                        subtitle: settings.customApplicationId != null
+                            ? 'App ID: ${settings.customApplicationId} • Key: ${settings.customAppIconKey ?? 'Built-in CDN'}'
+                            : 'App ID: Default • Logo: Built-in High-Res CDN',
+                        onTap: () =>
+                            _showEditAppConfigSheet(context, ref, settings),
+                      ),
+                    ],
                   ),
 
                 if (rpcState.isEnabled)

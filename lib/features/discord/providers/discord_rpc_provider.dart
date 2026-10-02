@@ -78,6 +78,7 @@ class DiscordRpcNotifier extends Notifier<DiscordRpcState>
       }
     }
 
+    _rpcService.configureSettings(customSettings);
     _initConnection(isEnabled);
 
     return DiscordRpcState(
@@ -140,6 +141,7 @@ class DiscordRpcNotifier extends Notifier<DiscordRpcState>
       _customSettingsKey,
       jsonEncode(newSettings.toJson()),
     );
+    _rpcService.configureSettings(newSettings);
     if (state.isConnected) {
       await updateBrowsingPresence();
     }

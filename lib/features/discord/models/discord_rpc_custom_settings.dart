@@ -1,4 +1,6 @@
 class DiscordRpcCustomSettings {
+  final String? customApplicationId;
+  final String? customAppIconKey;
   final String idleActivity;
   final String idleDetails;
   final bool enableDetailsPresence;
@@ -6,7 +8,9 @@ class DiscordRpcCustomSettings {
   final bool enableReaderPresence;
 
   const DiscordRpcCustomSettings({
-    this.idleActivity = 'Glazing ShonenX',
+    this.customApplicationId,
+    this.customAppIconKey,
+    this.idleActivity = 'Glazing KuroX',
     this.idleDetails = 'Browsing Catalog',
     this.enableDetailsPresence = true,
     this.enablePlayerPresence = true,
@@ -14,6 +18,8 @@ class DiscordRpcCustomSettings {
   });
 
   DiscordRpcCustomSettings copyWith({
+    String? customApplicationId,
+    String? customAppIconKey,
     String? idleActivity,
     String? idleDetails,
     bool? enableDetailsPresence,
@@ -21,6 +27,8 @@ class DiscordRpcCustomSettings {
     bool? enableReaderPresence,
   }) {
     return DiscordRpcCustomSettings(
+      customApplicationId: customApplicationId ?? this.customApplicationId,
+      customAppIconKey: customAppIconKey ?? this.customAppIconKey,
       idleActivity: idleActivity ?? this.idleActivity,
       idleDetails: idleDetails ?? this.idleDetails,
       enableDetailsPresence:
@@ -31,6 +39,8 @@ class DiscordRpcCustomSettings {
   }
 
   Map<String, dynamic> toJson() => {
+        'customApplicationId': customApplicationId,
+        'customAppIconKey': customAppIconKey,
         'idleActivity': idleActivity,
         'idleDetails': idleDetails,
         'enableDetailsPresence': enableDetailsPresence,
@@ -40,7 +50,9 @@ class DiscordRpcCustomSettings {
 
   factory DiscordRpcCustomSettings.fromJson(Map<String, dynamic> json) {
     return DiscordRpcCustomSettings(
-      idleActivity: json['idleActivity'] as String? ?? 'Glazing ShonenX',
+      customApplicationId: json['customApplicationId'] as String?,
+      customAppIconKey: json['customAppIconKey'] as String?,
+      idleActivity: json['idleActivity'] as String? ?? 'Glazing KuroX',
       idleDetails: json['idleDetails'] as String? ?? 'Browsing Catalog',
       enableDetailsPresence: json['enableDetailsPresence'] as bool? ?? true,
       enablePlayerPresence: json['enablePlayerPresence'] as bool? ?? true,
