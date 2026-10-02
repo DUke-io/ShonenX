@@ -7,6 +7,7 @@ import 'package:shonenx/features/episode_metadata/providers/episode_metadata_pro
 import 'package:shonenx/shared/models/unified_episode.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
 import 'package:shonenx/shared/providers/content_prefs_provider.dart';
+import 'package:shonenx/features/tracking/engine/trackers/tvmaze/tvmaze_service.dart';
 import 'package:shonenx/source_engine/models/source_info.dart';
 import 'package:shonenx/source_engine/providers/source_settings_provider.dart';
 import 'package:shonenx/source_engine/source_engine_provider.dart';
@@ -40,7 +41,20 @@ final episodesListProvider =
         );
         final matchState = await ref.watch(matchedMediaProvider(args).future);
 
+        final isTvm = (args.mediaId?.startsWith('tvm_') ?? false) ||
+            (args.providerId?.startsWith('tvm_') ?? false);
+
         if (matchState.matchedMedia == null) {
+          if (isTvm) {
+            final tvmId = args.mediaId ?? args.providerId!;
+            final tvmEpisodes = await TvMazeService.getShowEpisodes(tvmId);
+            if (tvmEpisodes.isNotEmpty) {
+              return EpisodesListState(
+                source: sourcePrefs.sourceInfo,
+                episodes: tvmEpisodes,
+              );
+            }
+          }
           return EpisodesListState(
             source: sourcePrefs.sourceInfo,
             episodes: const [],
@@ -54,6 +68,17 @@ final episodesListProvider =
             type: args.type,
           )).future,
         );
+
+        if (sourceEpisodesState.episodes.isEmpty && isTvm) {
+          final tvmId = args.mediaId ?? args.providerId!;
+          final tvmEpisodes = await TvMazeService.getShowEpisodes(tvmId);
+          if (tvmEpisodes.isNotEmpty) {
+            return EpisodesListState(
+              source: sourceEpisodesState.source,
+              episodes: tvmEpisodes,
+            );
+          }
+        }
 
         if (!args.type.usesAnimeSources ||
             sourceEpisodesState.episodes.isEmpty) {

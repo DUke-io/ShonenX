@@ -102,10 +102,13 @@ class DebridStreamResolver {
     final cleanTitle = media.title.english ?? media.title.romaji ?? media.title.availableTitle;
     final epNum = episode.number.toInt();
 
+    final isTvm = media.id.startsWith('tvm_') || (media.providerId?.startsWith('tvm_') ?? false);
+    final String? anilistId = isTvm ? null : (media.idMal ?? media.id);
+
     // 1. Scrape AnimeTosho
     List<TorrentRelease> releases = await AnimeToshoScraper.search(
       query: cleanTitle,
-      anilistId: media.idMal ?? media.id,
+      anilistId: anilistId,
       episodeNumber: epNum,
     );
 
@@ -115,6 +118,13 @@ class DebridStreamResolver {
         query: cleanTitle,
         episodeNumber: epNum,
       );
+      // For Western Cartoons, retry with S01E01 season-episode formatting
+      if (releases.isEmpty && episode.season != null && episode.season! > 0) {
+        final seasonTag = 'S${episode.season.toString().padLeft(2, '0')}E${epNum.toString().padLeft(2, '0')}';
+        releases = await NyaaScraper.search(
+          query: '$cleanTitle $seasonTag',
+        );
+      }
     }
 
     if (releases.isEmpty) return [];

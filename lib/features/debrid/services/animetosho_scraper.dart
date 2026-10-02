@@ -74,7 +74,7 @@ class AnimeToshoScraper {
         final resolution = _parseResolution(title);
         final group = _parseReleaseGroup(title);
         final isDualAudio = RegExp(
-          r'dual[- ]?audio|multi[- ]?audio|flac',
+          r'dual[- ]?audio|multi[- ]?audio|hindi|hin[- ]?eng|flac',
           caseSensitive: false,
         ).hasMatch(title);
         final isBatch = RegExp(

@@ -4,7 +4,7 @@ import 'package:shonenx/core/utils/app_logger.dart';
 import 'package:shonenx/features/debrid/domain/models/torrent_release.dart';
 
 class NyaaScraper {
-  static const String _baseUrl = 'https://nyaa.si/?page=rss&c=1_2&f=0';
+  static const String _baseUrl = 'https://nyaa.si/?page=rss&c=0_0&f=0';
   static final _log = AppLogger.scope('NyaaScraper');
 
   /// Searches Nyaa RSS feed for anime releases matching query.
@@ -82,8 +82,10 @@ class NyaaScraper {
             leechers: leechers,
             resolution: _parseResolution(title),
             releaseGroup: _parseReleaseGroup(title),
-            isDualAudio: RegExp(r'dual[- ]?audio|multi[- ]?audio', caseSensitive: false)
-                .hasMatch(title),
+            isDualAudio: RegExp(
+              r'dual[- ]?audio|multi[- ]?audio|hindi|hin[- ]?eng',
+              caseSensitive: false,
+            ).hasMatch(title),
             isBatch: RegExp(r'batch|complete', caseSensitive: false).hasMatch(title),
             source: 'Nyaa',
           ),

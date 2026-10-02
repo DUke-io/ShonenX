@@ -54,13 +54,13 @@ final metadataSourceProvider = Provider<RemoteTracker>((ref) {
     ) as RemoteTracker?;
   } catch (_) {}
 
-  if (fallbackTracker == null || selectedTracker.type == TrackerType.kitsu) {
-    return selectedTracker;
-  }
+  final fallback = (fallbackTracker != null && fallbackTracker != selectedTracker)
+      ? fallbackTracker
+      : selectedTracker;
 
   return ResilientRemoteTracker(
     primary: selectedTracker,
-    fallback: fallbackTracker,
+    fallback: fallback,
   );
 }, name: 'metadataSourceProvider');
 

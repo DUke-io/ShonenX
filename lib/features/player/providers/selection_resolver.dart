@@ -5,7 +5,17 @@ import 'package:shonenx/shared/models/video_server.dart';
 import 'package:shonenx/shared/models/video_stream.dart';
 
 const Map<String, List<String>> _languageAliases = {
-  'en': ['en', 'eng', 'english'],
+  'en': [
+    'en',
+    'eng',
+    'english',
+    'eng dub',
+    'eng-dub',
+    'english dub',
+    'en-us',
+    'en-gb',
+    'original',
+  ],
   'ja': ['ja', 'jpn', 'japanese', 'nihongo'],
   'es': ['es', 'spa', 'spanish', 'espanol', 'español', 'castilian', 'latin'],
   'fr': ['fr', 'fre', 'fra', 'french', 'francais', 'français'],
@@ -14,7 +24,18 @@ const Map<String, List<String>> _languageAliases = {
   'it': ['it', 'ita', 'italian', 'italiano'],
   'ru': ['ru', 'rus', 'russian', 'russkiy'],
   'ar': ['ar', 'ara', 'arabic'],
-  'hi': ['hi', 'hin', 'hindi'],
+  'hi': [
+    'hi',
+    'hin',
+    'hindi',
+    'hindi dub',
+    'hindi-dub',
+    'hin-eng',
+    'hindi audio',
+    'org hindi',
+    'dual audio',
+    'multi-audio',
+  ],
   'id': ['id', 'ind', 'indonesian', 'bahasa'],
   'tr': ['tr', 'tur', 'turkish', 'turkce', 'türkçe'],
   'vi': ['vi', 'vie', 'vietnamese', 'tieng viet', 'tiếng việt'],
@@ -109,7 +130,10 @@ class SelectionResolver {
     final isDub = type == ServerType.dub;
     return streams.where((s) {
       final q = s.quality.toLowerCase();
-      final streamIsDub = q.contains('dub') || q.contains('english');
+      final streamIsDub = q.contains('dub') ||
+          q.contains('english') ||
+          q.contains('hindi') ||
+          q.contains('dual');
       return isDub ? streamIsDub : !streamIsDub;
     }).toList();
   }

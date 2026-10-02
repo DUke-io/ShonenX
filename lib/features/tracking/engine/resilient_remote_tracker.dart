@@ -10,6 +10,7 @@ import 'package:shonenx/features/tracking/domain/models/tracker_filter_options.d
 import 'package:shonenx/features/tracking/domain/models/tracker_profile.dart';
 import 'package:shonenx/features/tracking/domain/models/tracker_type.dart';
 import 'package:shonenx/features/tracking/engine/remote_tracker.dart';
+import 'package:shonenx/features/tracking/engine/trackers/tvmaze/tvmaze_service.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
 import 'package:shonenx/shared/providers/content_prefs_provider.dart';
 import 'package:shonenx/source_engine/models/paginated_result.dart';
@@ -172,14 +173,34 @@ class ResilientRemoteTracker implements RemoteTracker {
     try {
       final results = await primary.searchMedia(query, type: type);
       if (results.isNotEmpty) return results;
-      return await fallback.searchMedia(query, type: type);
+      final fallbackResults = await fallback.searchMedia(query, type: type);
+      if (fallbackResults.isNotEmpty) return fallbackResults;
     } catch (e) {
       log(
         'searchMedia failed on ${primary.type.displayName}, using fallback: $e',
         name: 'ResilientRemoteTracker',
       );
-      return await fallback.searchMedia(query, type: type);
     }
+
+    // Universal Auto: Query TVMaze for western cartoons & animated shows
+    try {
+      final tvmResults = await TvMazeService.searchShows(query, mediaType: type);
+      if (tvmResults.isNotEmpty) {
+        return tvmResults
+            .map(
+              (m) => TrackerSearchResult(
+                id: m.id,
+                title: m.title.english ?? m.title.availableTitle,
+                coverImage: m.cover,
+                type: m.type,
+                format: m.format,
+                year: m.year,
+              ),
+            )
+            .toList();
+      }
+    } catch (_) {}
+    return [];
   }
 
   @override
@@ -195,8 +216,9 @@ class ResilientRemoteTracker implements RemoteTracker {
     Duration? cacheDuration,
     AdultContentMode adultMode = AdultContentMode.safe,
   }) async {
+    PaginatedResult<UnifiedMedia>? primaryResult;
     try {
-      final result = await primary.search(
+      primaryResult = await primary.search(
         query,
         page: page,
         type: type,
@@ -208,20 +230,7 @@ class ResilientRemoteTracker implements RemoteTracker {
         cacheDuration: cacheDuration,
         adultMode: adultMode,
       );
-
-      if (result.items.isNotEmpty) return result;
-      return await fallback.search(
-        query,
-        page: page,
-        type: type,
-        genres: genres,
-        tags: tags,
-        sort: sort,
-        status: status,
-        format: format,
-        cacheDuration: cacheDuration,
-        adultMode: adultMode,
-      );
+      if (primaryResult.items.isNotEmpty) return primaryResult;
     } catch (e, st) {
       log(
         'search failed on ${primary.type.displayName}, falling back to ${fallback.type.displayName}: $e',
@@ -229,7 +238,10 @@ class ResilientRemoteTracker implements RemoteTracker {
         error: e,
         stackTrace: st,
       );
-      return await fallback.search(
+    }
+
+    try {
+      final fallbackResult = await fallback.search(
         query,
         page: page,
         type: type,
@@ -241,11 +253,40 @@ class ResilientRemoteTracker implements RemoteTracker {
         cacheDuration: cacheDuration,
         adultMode: adultMode,
       );
+      if (fallbackResult.items.isNotEmpty) return fallbackResult;
+    } catch (_) {}
+
+    // Universal Auto: Query TVMaze for western cartoons & Gen Z classics
+    if (query.trim().isNotEmpty && page == 1) {
+      try {
+        final tvmShows = await TvMazeService.searchShows(query, mediaType: type);
+        if (tvmShows.isNotEmpty) {
+          log(
+            'Found ${tvmShows.length} cartoon shows on TVMaze for "$query"',
+            name: 'ResilientRemoteTracker',
+          );
+          return PaginatedResult<UnifiedMedia>(
+            items: tvmShows,
+            hasNextPage: false,
+            page: 1,
+            totalItems: tvmShows.length,
+          );
+        }
+      } catch (e) {
+        log('TVMaze search fallback error: $e', name: 'ResilientRemoteTracker');
+      }
     }
+
+    return primaryResult ??
+        const PaginatedResult(items: [], page: 1, hasNextPage: false);
   }
 
   @override
   Future<UnifiedMedia> getDetails(String providerId, MediaType type) async {
+    if (providerId.startsWith('tvm_')) {
+      final tvmMedia = await TvMazeService.getShowDetails(providerId);
+      if (tvmMedia != null) return tvmMedia;
+    }
     try {
       return await primary.getDetails(providerId, type);
     } catch (e) {
@@ -253,7 +294,15 @@ class ResilientRemoteTracker implements RemoteTracker {
         'getDetails failed on ${primary.type.displayName}, trying fallback: $e',
         name: 'ResilientRemoteTracker',
       );
-      return await fallback.getDetails(providerId, type);
+      try {
+        return await fallback.getDetails(providerId, type);
+      } catch (_) {
+        if (!providerId.startsWith('tvm_')) {
+          final tvmMedia = await TvMazeService.getShowDetails(providerId);
+          if (tvmMedia != null) return tvmMedia;
+        }
+        rethrow;
+      }
     }
   }
 
@@ -264,6 +313,16 @@ class ResilientRemoteTracker implements RemoteTracker {
     int perPage = 25,
     MediaType type = MediaType.ANIME,
   }) async {
+    if (providerId.startsWith('tvm_')) {
+      final details = await TvMazeService.getShowDetails(providerId);
+      final chars = details?.characters ?? [];
+      return PaginatedResult(
+        items: chars,
+        page: 1,
+        hasNextPage: false,
+        totalItems: chars.length,
+      );
+    }
     try {
       final result = await primary.getCharacters(
         providerId,
