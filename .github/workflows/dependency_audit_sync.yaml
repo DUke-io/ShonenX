@@ -64,6 +64,7 @@ jobs:
           echo "| Submodule | Path | Status |" >> report.md
           echo "|---|---|---|" >> report.md
 
+          HAS_MISSING=false
           check_submodule() {
             local name="$1"
             local path="$2"
@@ -73,6 +74,7 @@ jobs:
             else
               if [ "$required" = "true" ]; then
                 echo "| **$name** | \`$path\` | 🔴 Missing |" >> report.md
+                HAS_MISSING=true
               else
                 echo "| **$name** | \`$path\` | 🟡 Unavailable on Fork (Upstream Private) |" >> report.md
               fi
@@ -82,6 +84,7 @@ jobs:
           check_submodule "Extension Bridge" "packages/anymex_extension_bridge" "true"
           check_submodule "Commentum Client" "packages/commentum_client" "true"
           check_submodule "Inbuilt Sources" "lib/source_engine/inbuilt_sources" "false"
+          echo "has_missing=$HAS_MISSING" >> "$GITHUB_OUTPUT"
 
       - name: Audit Git Dependencies (MediaKit & Webview Forks)
         id: git_deps_check
@@ -90,6 +93,7 @@ jobs:
           echo "| Git Dependency | Repository | Status |" >> report.md
           echo "|---|---|---|" >> report.md
           
+          HAS_UNREACHABLE=false
           check_git_repo() {
             local name="$1"
             local url="$2"
@@ -97,12 +101,14 @@ jobs:
               echo "| **$name** | \`$url\` | 🟢 Reachable |" >> report.md
             else
               echo "| **$name** | \`$url\` | 🔴 UNREACHABLE |" >> report.md
+              HAS_UNREACHABLE=true
             fi
           }
           
           check_git_repo "media_kit" "https://github.com/Predidit/media-kit.git"
           check_git_repo "flutter_inappwebview" "https://github.com/roshancodespace/flutter_inappwebview.git"
           check_git_repo "flutter_web_auth_2" "https://github.com/roshancodespace/flutter_web_auth.git"
+          echo "has_unreachable=$HAS_UNREACHABLE" >> "$GITHUB_OUTPUT"
 
       - name: Perform Safe Dependency Upgrade & Outdated Check
         id: pub_upgrade
@@ -154,15 +160,15 @@ jobs:
         run: |
           echo "### 🛠️ Static Analysis & Build Health" >> report.md
           
-          if flutter analyze --no-fatal-infos > analyze_output.txt 2>&1; then
-            echo "🟢 **Flutter Analyze Passed without fatal errors.**" >> report.md
+          if flutter analyze --no-fatal-warnings --no-fatal-infos > analyze_output.txt 2>&1; then
+            echo "🟢 **Flutter Analyze Passed without errors.**" >> report.md
             echo "analyze_status=PASSED" >> "$GITHUB_OUTPUT"
           else
-            echo "⚠️ **Flutter Analyze Reported Issues:**" >> report.md
+            echo "🔴 **Flutter Analyze Reported Errors:**" >> report.md
             echo '```text' >> report.md
-            head -n 20 analyze_output.txt >> report.md
+            head -n 25 analyze_output.txt >> report.md
             echo '```' >> report.md
-            echo "analyze_status=WARNINGS" >> "$GITHUB_OUTPUT"
+            echo "analyze_status=FAILED" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Generate Final Audit Report
@@ -206,18 +212,40 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create or Update GitHub Issue (On Incompatibilities / Major Upgrades)
-        if: ${{ (inputs.create_issue == true || github.event_name == 'schedule') && (steps.analyze.outputs.analyze_status == 'WARNINGS' || steps.pub_upgrade.outputs.has_major_updates == 'true') }}
+      - name: Find Existing Rolling Issue
+        id: find_issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EXISTING_NUM=$(gh issue list --repo "${{ github.repository }}" --label "automated-audit" --state open --limit 1 --json number --jq '.[0].number' || echo "")
+          if [ -n "$EXISTING_NUM" ]; then
+            echo "issue_number=$EXISTING_NUM" >> "$GITHUB_OUTPUT"
+            echo "Found existing open audit issue #$EXISTING_NUM to update"
+          else
+            echo "issue_number=" >> "$GITHUB_OUTPUT"
+            echo "No existing open audit issue found"
+          fi
+
+      - name: Create or Update Single Rolling GitHub Issue (Only on Breakages)
+        if: ${{ (inputs.create_issue == true || github.event_name == 'schedule') && (steps.git_deps_check.outputs.has_unreachable == 'true' || steps.submodule_check.outputs.has_missing == 'true' || steps.analyze.outputs.analyze_status == 'FAILED') }}
         uses: peter-evans/create-issue-from-file@v5
         with:
-          title: "🤖 Dependency Audit & Compatibility Alert [${{ steps.final_report.outputs.audit_date_short }}]"
+          title: "🤖 Dependency & Ecosystem Compatibility Alert"
           content-filepath: full_report.md
+          issue-number: ${{ steps.find_issue.outputs.issue_number }}
           labels: |
             dependencies
             automated-audit
             maintenance
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-close Audit Issue If Resolved
+        if: ${{ steps.find_issue.outputs.issue_number != '' && steps.git_deps_check.outputs.has_unreachable != 'true' && steps.submodule_check.outputs.has_missing != 'true' && steps.analyze.outputs.analyze_status == 'PASSED' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue close "${{ steps.find_issue.outputs.issue_number }}" --repo "${{ github.repository }}" --comment "All ecosystem dependencies, submodules, and static analysis checks are now healthy and passing."
 
       - name: Send Discord Alert
         if: ${{ github.event_name == 'schedule' || inputs.notify_discord == true }}
