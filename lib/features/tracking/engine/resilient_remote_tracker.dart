@@ -187,14 +187,11 @@ class ResilientRemoteTracker implements RemoteTracker {
       final tvmResults = await TvMazeService.searchShows(query, mediaType: type);
       if (tvmResults.isNotEmpty) {
         return tvmResults
-            .map(
+            .map<TrackerSearchResult>(
               (m) => TrackerSearchResult(
                 id: m.id,
-                title: m.title.english ?? m.title.availableTitle,
-                coverImage: m.cover,
-                type: m.type,
-                format: m.format,
-                year: m.year,
+                title: m.title,
+                cover: m.cover,
               ),
             )
             .toList();
@@ -268,8 +265,6 @@ class ResilientRemoteTracker implements RemoteTracker {
           return PaginatedResult<UnifiedMedia>(
             items: tvmShows,
             hasNextPage: false,
-            page: 1,
-            totalItems: tvmShows.length,
           );
         }
       } catch (e) {
@@ -278,7 +273,7 @@ class ResilientRemoteTracker implements RemoteTracker {
     }
 
     return primaryResult ??
-        const PaginatedResult(items: [], page: 1, hasNextPage: false);
+        const PaginatedResult(items: [], hasNextPage: false);
   }
 
   @override
@@ -316,11 +311,9 @@ class ResilientRemoteTracker implements RemoteTracker {
     if (providerId.startsWith('tvm_')) {
       final details = await TvMazeService.getShowDetails(providerId);
       final chars = details?.characters ?? [];
-      return PaginatedResult(
+      return PaginatedResult<MediaCharacter>(
         items: chars,
-        page: 1,
         hasNextPage: false,
-        totalItems: chars.length,
       );
     }
     try {
