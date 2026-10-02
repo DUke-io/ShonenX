@@ -1,10 +1,22 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shonenx/core/utils/app_logger.dart';
 import 'package:shonenx/shared/models/unified_episode.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
 
-/// Service providing access to the free TVMaze API (api.tvmaze.com).
+/// Cache entry with expiration timestamp.
+class _CacheEntry<T> {
+  final T data;
+  final DateTime expiresAt;
+
+  _CacheEntry(this.data, Duration ttl) : expiresAt = DateTime.now().add(ttl);
+
+  bool get isExpired => DateTime.now().isAfter(expiresAt);
+}
+
+/// Service providing resilient, rate-limited access to TVMaze API (api.tvmaze.com)
+/// with in-memory TTL caching and automatic Kitsu fallback.
 /// Specializes in Western cartoons, 2000s Gen Z classics (Ben 10, Generator Rex,
 /// Teen Titans, Avatar, Regular Show, etc.), and animated television series.
 class TvMazeService {
@@ -12,50 +24,140 @@ class TvMazeService {
   static final _log = AppLogger.scope('TvMazeService');
   static final http.Client _client = http.Client();
 
+  // ─── In-Memory TTL Caches ───
+  static final Map<String, _CacheEntry<List<UnifiedMedia>>> _searchCache = {};
+  static final Map<String, _CacheEntry<UnifiedMedia>> _detailsCache = {};
+  static final Map<String, _CacheEntry<List<UnifiedEpisode>>> _episodesCache = {};
+
+  // ─── Rate Limiter State ───
+  // TVMaze limit: 20 req / 10s per IP (~2 req/s).
+  // We pace requests to at least 300ms apart and queue bursts.
+  static const Duration _minRequestInterval = Duration(milliseconds: 320);
+  static DateTime _lastRequestTime = DateTime.fromMillisecondsSinceEpoch(0);
+  static Completer<void>? _rateLimitQueue;
+
+  /// Executes an HTTP request through the rate-limiter with automatic 429 backoff retry.
+  static Future<http.Response> _rateLimitedGet(
+    Uri uri, {
+    Map<String, String>? headers,
+    Duration timeout = const Duration(seconds: 10),
+    int maxRetries = 2,
+  }) async {
+    for (int attempt = 0; attempt <= maxRetries; attempt++) {
+      // Serialize access and enforce spacing
+      while (_rateLimitQueue != null) {
+        await _rateLimitQueue!.future;
+      }
+
+      final completer = Completer<void>();
+      _rateLimitQueue = completer;
+
+      try {
+        final now = DateTime.now();
+        final elapsed = now.difference(_lastRequestTime);
+        if (elapsed < _minRequestInterval) {
+          final waitDuration = _minRequestInterval - elapsed;
+          await Future.delayed(waitDuration);
+        }
+        _lastRequestTime = DateTime.now();
+      } finally {
+        _rateLimitQueue = null;
+        completer.complete();
+      }
+
+      try {
+        final response = await _client.get(
+          uri,
+          headers: headers ??
+              {
+                'User-Agent': 'KuroX-Client/2.1 (TVMazeService)',
+                'Accept': 'application/json',
+              },
+        ).timeout(timeout);
+
+        if (response.statusCode == 429) {
+          _log.w('TVMaze returned HTTP 429 (Rate Limited) on attempt $attempt');
+          if (attempt < maxRetries) {
+            // Read Retry-After header or backoff exponentially
+            final retryHeader = response.headers['retry-after'];
+            final retrySec = (retryHeader != null ? int.tryParse(retryHeader) : null) ??
+                (attempt + 1) * 2;
+            _log.i('Backing off for $retrySec seconds before retrying TVMaze...');
+            await Future.delayed(Duration(seconds: retrySec));
+            continue;
+          }
+        }
+
+        return response;
+      } catch (e) {
+        if (attempt >= maxRetries) rethrow;
+        await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+      }
+    }
+
+    throw Exception('Failed to fetch from TVMaze after $maxRetries retries');
+  }
+
   /// Searches TVMaze for animated shows matching [query].
+  /// Uses in-memory cache and automatically falls back to Kitsu on failure.
   static Future<List<UnifiedMedia>> searchShows(
     String query, {
     MediaType mediaType = MediaType.ANIME,
   }) async {
-    final cleanQuery = query.trim();
+    final cleanQuery = query.trim().toLowerCase();
     if (cleanQuery.isEmpty) return [];
+
+    // Check in-memory cache first
+    final cached = _searchCache[cleanQuery];
+    if (cached != null && !cached.isExpired) {
+      return cached.data;
+    }
 
     try {
       final uri = Uri.parse('$_baseUrl/search/shows?q=${Uri.encodeComponent(cleanQuery)}');
       _log.i('Searching TVMaze shows: $uri');
 
-      final response = await _client.get(
-        uri,
-        headers: {
-          'User-Agent': 'KuroX-Client/2.1 (TVMazeService)',
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 8));
+      final response = await _rateLimitedGet(uri);
 
-      if (response.statusCode != 200) {
-        _log.w('TVMaze returned HTTP ${response.statusCode}');
-        return [];
-      }
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is List) {
+          final List<UnifiedMedia> results = [];
+          for (final item in data) {
+            if (item is! Map<String, dynamic>) continue;
+            final show = item['show'] as Map<String, dynamic>?;
+            if (show == null) continue;
 
-      final data = jsonDecode(response.body);
-      if (data is! List) return [];
+            final media = _mapShowToMedia(show, mediaType: mediaType);
+            if (media != null) {
+              results.add(media);
+            }
+          }
 
-      final List<UnifiedMedia> results = [];
-      for (final item in data) {
-        if (item is! Map<String, dynamic>) continue;
-        final show = item['show'] as Map<String, dynamic>?;
-        if (show == null) continue;
-
-        final media = _mapShowToMedia(show, mediaType: mediaType);
-        if (media != null) {
-          results.add(media);
+          if (results.isNotEmpty) {
+            _searchCache[cleanQuery] = _CacheEntry(results, const Duration(hours: 1));
+            _log.i('TVMaze found ${results.length} shows for "$cleanQuery"');
+            return results;
+          }
         }
       }
 
-      _log.i('TVMaze found ${results.length} shows for "$cleanQuery"');
-      return results;
+      // If TVMaze returned 0 items or HTTP error, try fallback
+      _log.i('TVMaze returned empty/error for "$cleanQuery", executing Kitsu fallback...');
+      final fallbackResults = await _fallbackSearchKitsu(cleanQuery, mediaType);
+      if (fallbackResults.isNotEmpty) {
+        _searchCache[cleanQuery] = _CacheEntry(fallbackResults, const Duration(hours: 1));
+        return fallbackResults;
+      }
+
+      // If cached stale results exist, return them
+      if (cached != null) return cached.data;
+      return [];
     } catch (e, st) {
-      _log.w('TVMaze search failed for "$cleanQuery": $e', [st]);
+      _log.w('TVMaze search failed for "$cleanQuery": $e, trying fallback...', [st]);
+      final fallbackResults = await _fallbackSearchKitsu(cleanQuery, mediaType);
+      if (fallbackResults.isNotEmpty) return fallbackResults;
+      if (cached != null) return cached.data;
       return [];
     }
   }
@@ -65,29 +167,33 @@ class TvMazeService {
     final numericId = showId.replaceAll('tvm_', '').trim();
     if (numericId.isEmpty) return null;
 
+    final cached = _detailsCache[numericId];
+    if (cached != null && !cached.isExpired) {
+      return cached.data;
+    }
+
     try {
       final uri = Uri.parse('$_baseUrl/shows/$numericId?embed[]=episodes&embed[]=cast');
       _log.i('Fetching TVMaze show details: $uri');
 
-      final response = await _client.get(
-        uri,
-        headers: {
-          'User-Agent': 'KuroX-Client/2.1 (TVMazeService)',
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
+      final response = await _rateLimitedGet(uri);
 
-      if (response.statusCode != 200) {
-        _log.w('TVMaze details returned HTTP ${response.statusCode}');
-        return null;
+      if (response.statusCode == 200) {
+        final show = jsonDecode(response.body);
+        if (show is Map<String, dynamic>) {
+          final media = _mapShowToMedia(show, includeEmbedded: true);
+          if (media != null) {
+            _detailsCache[numericId] = _CacheEntry(media, const Duration(hours: 24));
+            return media;
+          }
+        }
       }
 
-      final show = jsonDecode(response.body);
-      if (show is! Map<String, dynamic>) return null;
-
-      return _mapShowToMedia(show, includeEmbedded: true);
+      if (cached != null) return cached.data;
+      return null;
     } catch (e, st) {
       _log.e('Failed to fetch TVMaze show $showId: $e', [st]);
+      if (cached != null) return cached.data;
       return null;
     }
   }
@@ -97,54 +203,122 @@ class TvMazeService {
     final numericId = showId.replaceAll('tvm_', '').trim();
     if (numericId.isEmpty) return [];
 
+    final cached = _episodesCache[numericId];
+    if (cached != null && !cached.isExpired) {
+      return cached.data;
+    }
+
     try {
       final uri = Uri.parse('$_baseUrl/shows/$numericId/episodes');
       _log.i('Fetching TVMaze episodes: $uri');
 
+      final response = await _rateLimitedGet(uri);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is List) {
+          final List<UnifiedEpisode> episodes = [];
+          for (int i = 0; i < data.length; i++) {
+            final ep = data[i];
+            if (ep is! Map<String, dynamic>) continue;
+
+            final numVal = (ep['number'] as num?)?.toDouble() ?? (i + 1).toDouble();
+            final seasonVal = ep['season'] as int?;
+            final nameVal = ep['name']?.toString() ?? 'Episode $numVal';
+            final imageMap = ep['image'] as Map<String, dynamic>?;
+            final thumb = imageMap?['original']?.toString() ?? imageMap?['medium']?.toString();
+            final airDate = ep['airdate']?.toString();
+
+            episodes.add(
+              UnifiedEpisode(
+                id: 'tvm_ep_${ep['id'] ?? i}',
+                number: numVal,
+                season: seasonVal,
+                title: nameVal,
+                thumbnailUrl: thumb,
+                airDate: airDate,
+                uploadDate: ep['airstamp']?.toString(),
+              ),
+            );
+          }
+
+          _episodesCache[numericId] = _CacheEntry(episodes, const Duration(hours: 24));
+          return episodes;
+        }
+      }
+
+      if (cached != null) return cached.data;
+      return [];
+    } catch (e, st) {
+      _log.e('Failed to fetch TVMaze episodes for $showId: $e', [st]);
+      if (cached != null) return cached.data;
+      return [];
+    }
+  }
+
+  /// Secondary fallback search using Kitsu API.
+  static Future<List<UnifiedMedia>> _fallbackSearchKitsu(
+    String query,
+    MediaType mediaType,
+  ) async {
+    try {
+      final uri = Uri.parse(
+        'https://kitsu.io/api/edge/anime?filter[text]=${Uri.encodeComponent(query)}&page[limit]=10',
+      );
+      _log.i('Querying Kitsu fallback: $uri');
+
       final response = await _client.get(
         uri,
         headers: {
-          'User-Agent': 'KuroX-Client/2.1 (TVMazeService)',
-          'Accept': 'application/json',
+          'Accept': 'application/vnd.api+json',
+          'User-Agent': 'KuroX-Client/2.1 (FallbackSearch)',
         },
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 6));
 
-      if (response.statusCode != 200) {
-        _log.w('TVMaze episodes returned HTTP ${response.statusCode}');
-        return [];
-      }
+      if (response.statusCode != 200) return [];
 
-      final data = jsonDecode(response.body);
-      if (data is! List) return [];
+      final body = jsonDecode(response.body);
+      final data = body['data'] as List?;
+      if (data == null || data.isEmpty) return [];
 
-      final List<UnifiedEpisode> episodes = [];
-      for (int i = 0; i < data.length; i++) {
-        final ep = data[i];
-        if (ep is! Map<String, dynamic>) continue;
+      final List<UnifiedMedia> results = [];
+      for (final item in data) {
+        if (item is! Map) continue;
+        final id = item['id']?.toString() ?? '';
+        final attrs = item['attributes'] as Map?;
+        if (attrs == null) continue;
 
-        final numVal = (ep['number'] as num?)?.toDouble() ?? (i + 1).toDouble();
-        final seasonVal = ep['season'] as int?;
-        final nameVal = ep['name']?.toString() ?? 'Episode $numVal';
-        final imageMap = ep['image'] as Map<String, dynamic>?;
-        final thumb = imageMap?['original']?.toString() ?? imageMap?['medium']?.toString();
-        final airDate = ep['airdate']?.toString();
+        final title = attrs['canonicalTitle']?.toString() ??
+            attrs['titles']?['en']?.toString() ??
+            'Unknown';
+        final poster = attrs['posterImage']?['original']?.toString() ??
+            attrs['posterImage']?['medium']?.toString();
+        final banner = attrs['coverImage']?['original']?.toString() ?? poster;
+        final synopsis = attrs['synopsis']?.toString();
+        final episodeCount = attrs['episodeCount'] as int?;
+        final ratingStr = attrs['averageRating']?.toString();
+        final score = double.tryParse(ratingStr ?? '');
 
-        episodes.add(
-          UnifiedEpisode(
-            id: 'tvm_ep_${ep['id'] ?? i}',
-            number: numVal,
-            season: seasonVal,
-            title: nameVal,
-            thumbnailUrl: thumb,
-            airDate: airDate,
-            uploadDate: ep['airstamp']?.toString(),
+        results.add(
+          UnifiedMedia(
+            id: 'kitsu_$id',
+            providerId: 'kitsu_$id',
+            type: mediaType,
+            format: 'Animation',
+            title: MediaTitle(english: title, romaji: title),
+            cover: poster,
+            banner: banner,
+            description: synopsis,
+            score: score,
+            episodes: episodeCount,
           ),
         );
       }
 
-      return episodes;
-    } catch (e, st) {
-      _log.e('Failed to fetch TVMaze episodes for $showId: $e', [st]);
+      _log.i('Kitsu fallback found ${results.length} shows for "$query"');
+      return results;
+    } catch (e) {
+      _log.w('Kitsu fallback search failed: $e');
       return [];
     }
   }
