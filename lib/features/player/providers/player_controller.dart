@@ -540,8 +540,8 @@ class PlayerController extends Notifier<PlayerState> {
       }
 
       // Step 8: Initialize video engine with selected quality and subtitle track
-      var activeStream = qualityResult.active;
-      if (activeStream.requiresProxy) {
+      var streamToPlay = qualityResult.active;
+      if (streamToPlay.requiresProxy) {
         final server = ref.read(streamServerProvider);
         if (_currentHlsStreamId != null) {
           server.unregister(_currentHlsStreamId!);
@@ -551,18 +551,18 @@ class PlayerController extends Notifier<PlayerState> {
         final localUrl = await server.register(
           HlsStream(
             id: id,
-            upstreamUrl: activeStream.url,
-            headers: activeStream.headers ?? {},
+            upstreamUrl: streamToPlay.url,
+            headers: streamToPlay.headers ?? {},
           ),
         );
-        activeStream = activeStream.copyWith(url: localUrl);
+        streamToPlay = streamToPlay.copyWith(url: localUrl);
       }
 
       final useCustomSub = ref.read(subtitlePrefsProvider).useCustomSubtitle;
       await ref
           .read(videoEngineProvider)
           .initialize(
-            activeStream,
+            streamToPlay,
             subtitle: useCustomSub || activeSubtitle.url.isEmpty
                 ? null
                 : activeSubtitle,

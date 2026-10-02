@@ -255,13 +255,15 @@ class HTTP {
     Map<String, String>? headers,
     Map<String, String>? queryParameters,
     Duration? cacheDuration = Duration.zero,
+    bool suppressLogs = false,
+    bool forceRefresh = false,
   }) {
     return _request(
       'GET',
       url,
       headers: headers,
       queryParameters: queryParameters,
-      cacheDuration: cacheDuration,
+      cacheDuration: forceRefresh ? Duration.zero : cacheDuration,
     );
   }
 

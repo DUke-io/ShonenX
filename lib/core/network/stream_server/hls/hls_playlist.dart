@@ -27,8 +27,6 @@ class HlsPlaylist {
       final res = await httpClient.get(
         upstreamUrl,
         headers: stream.headers,
-        forceRefresh: true, // Always get a fresh playlist
-        suppressLogs: true,
       );
 
       final body = res.body;

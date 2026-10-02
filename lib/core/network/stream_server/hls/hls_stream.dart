@@ -48,7 +48,6 @@ class HlsStream extends ProxyStream {
     final res = await httpClient.get(
       keyUrl,
       headers: headers,
-      suppressLogs: true,
     );
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw Exception('Failed to fetch key: ${res.statusCode}');
@@ -76,7 +75,6 @@ class HlsStream extends ProxyStream {
       final res = await httpClient.get(
         segmentUrl,
         headers: headers,
-        suppressLogs: true,
       );
 
       if (res.statusCode < 200 || res.statusCode >= 300) {
