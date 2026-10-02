@@ -69,9 +69,11 @@ final animeSourceProvider = Provider.family<AnimeSource, SourceInfo>((
   info,
 ) {
   if (info.type == SourceType.inbuilt) {
-    return ref
-        .read(inbuiltAnimeSourcesProvider)
-        .firstWhere((s) => s.sourceInfo.id == info.id);
+    final sources = ref.read(inbuiltAnimeSourcesProvider);
+    return sources.firstWhere(
+      (s) => s.sourceInfo.id == info.id,
+      orElse: () => sources.first,
+    );
   }
 
   final bridgeManager = Get.find<bridge.ExtensionManager>();

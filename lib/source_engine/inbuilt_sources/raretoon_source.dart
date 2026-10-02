@@ -111,36 +111,7 @@ class RareToonSource implements AnimeSource {
       }
 
       final doc = html_parser.parse(res.body);
-      final articles = doc.querySelectorAll('article.herald-lay-f, div.herald-posts article, h2.entry-title');
-      final List<UnifiedMedia> results = [];
-
-      for (final el in articles) {
-        final titleAnchor = el.querySelector('h2.entry-title a') ?? el.querySelector('a');
-        if (titleAnchor == null) continue;
-
-        final rawTitle = titleAnchor.text.trim();
-        final link = titleAnchor.attributes['href'] ?? '';
-        if (rawTitle.isEmpty || link.isEmpty) continue;
-
-        // Skip non-show pages
-        if (link.contains('/category/') || link.contains('/tag/')) continue;
-
-        final imgEl = el.querySelector('img');
-        final coverUrl = imgEl?.attributes['src'] ?? imgEl?.attributes['data-src'];
-
-        results.add(
-          UnifiedMedia(
-            id: link,
-            providerId: link,
-            type: MediaType.ANIME,
-            format: 'Cartoon',
-            title: MediaTitle(english: rawTitle, romaji: rawTitle),
-            cover: coverUrl,
-            banner: coverUrl,
-            genres: const ['Animation', 'Hindi Dub', 'Dual Audio'],
-          ),
-        );
-      }
+      final results = _parseArticleList(doc);
 
       _searchCache[cacheKey] = results;
       _log.i('RareToon found ${results.length} shows for "$cleanQuery"');
@@ -151,9 +122,156 @@ class RareToonSource implements AnimeSource {
     }
   }
 
+  /// Parses search and trending HTML pages with strict deduplication and thumbnail resolution.
+  List<UnifiedMedia> _parseArticleList(dynamic doc) {
+    final List<UnifiedMedia> results = [];
+    final Set<String> seenUrls = {};
+
+    // 1. Primary: Extract from <article> container to prevent nested duplicate hits
+    final articles = doc.querySelectorAll('article');
+    for (final el in articles) {
+      final titleAnchor = el.querySelector('h2.entry-title a') ??
+          el.querySelector('.entry-title a') ??
+          el.querySelector('h2 a') ??
+          el.querySelector('h3 a') ??
+          el.querySelector('a');
+      if (titleAnchor == null) continue;
+
+      final rawTitle = titleAnchor.text.trim();
+      final link = titleAnchor.attributes['href'] ?? '';
+      if (rawTitle.isEmpty || link.isEmpty) continue;
+
+      // Ignore taxonomy, category, tag, author or page navigations
+      if (link.contains('/category/') ||
+          link.contains('/tag/') ||
+          link.contains('/author/') ||
+          link.contains('/page/')) continue;
+
+      final normLink = link.endsWith('/') ? link.substring(0, link.length - 1) : link;
+      if (seenUrls.contains(normLink)) continue;
+      seenUrls.add(normLink);
+
+      // Thumbnail extraction: prioritize dedicated post-thumbnail containers
+      final imgEl = el.querySelector('.herald-post-thumbnail img') ??
+          el.querySelector('.fa-post-thumbnail img') ??
+          el.querySelector('img');
+
+      var coverUrl = imgEl?.attributes['src'] ??
+          imgEl?.attributes['data-src'] ??
+          imgEl?.attributes['data-lazy-src'];
+
+      if (coverUrl != null && coverUrl.startsWith('data:image')) {
+        coverUrl = imgEl?.attributes['data-src'] ?? imgEl?.attributes['data-lazy-src'];
+      }
+
+      final cleanTitle = cleanDisplayTitle(rawTitle);
+
+      results.add(
+        UnifiedMedia(
+          id: link,
+          providerId: link,
+          type: MediaType.ANIME,
+          sourceId: sourceInfo.id,
+          sourceName: sourceInfo.name,
+          format: 'Cartoon',
+          title: MediaTitle(english: cleanTitle, romaji: rawTitle),
+          cover: coverUrl,
+          banner: coverUrl,
+          genres: const ['Animation', 'Hindi Dub', 'Dual Audio'],
+        ),
+      );
+    }
+
+    // 2. Fallback: If no articles found, parse entry-title anchors directly
+    if (results.isEmpty) {
+      final titleAnchors = doc.querySelectorAll('h2.entry-title a, .entry-title a, h2 a');
+      for (final anchor in titleAnchors) {
+        final rawTitle = anchor.text.trim();
+        final link = anchor.attributes['href'] ?? '';
+        if (rawTitle.isEmpty || link.isEmpty) continue;
+        if (link.contains('/category/') ||
+            link.contains('/tag/') ||
+            link.contains('/author/') ||
+            link.contains('/page/')) continue;
+
+        final normLink = link.endsWith('/') ? link.substring(0, link.length - 1) : link;
+        if (seenUrls.contains(normLink)) continue;
+        seenUrls.add(normLink);
+
+        final parent = anchor.parent?.parent;
+        final imgEl = parent?.querySelector('img');
+        var coverUrl = imgEl?.attributes['src'] ??
+            imgEl?.attributes['data-src'] ??
+            imgEl?.attributes['data-lazy-src'];
+
+        if (coverUrl != null && coverUrl.startsWith('data:image')) {
+          coverUrl = imgEl?.attributes['data-src'] ?? imgEl?.attributes['data-lazy-src'];
+        }
+
+        final cleanTitle = cleanDisplayTitle(rawTitle);
+
+        results.add(
+          UnifiedMedia(
+            id: link,
+            providerId: link,
+            type: MediaType.ANIME,
+            sourceId: sourceInfo.id,
+            sourceName: sourceInfo.name,
+            format: 'Cartoon',
+            title: MediaTitle(english: cleanTitle, romaji: rawTitle),
+            cover: coverUrl,
+            banner: coverUrl,
+            genres: const ['Animation', 'Hindi Dub', 'Dual Audio'],
+          ),
+        );
+      }
+    }
+
+    return results;
+  }
+
+  /// Cleans technical release metadata (e.g. "480p, 720p HD WEB-DL | 10bit HEVC ESub") for sleek UI cards.
+  static String cleanDisplayTitle(String raw) {
+    var t = raw;
+    t = t.replaceAll(
+      RegExp(r'\b(480p|720p|1080p|2160p|4k|HD|WEB-DL|BluRay|BRRip|HDRip|10bit|HEVC|ESub|x264|x265)\b', caseSensitive: false),
+      '',
+    );
+    t = t.replaceAll(RegExp(r'[\|\&\,]+'), ' ');
+    t = t.replaceAll(RegExp(r'\s+'), ' ').trim();
+    t = t.replaceAll(RegExp(r'\s*\[\s*\]\s*'), ' ').trim();
+    return t.isNotEmpty ? t : raw;
+  }
+
   @override
   Future<List<UnifiedMedia>> getTrending({int page = 1}) async {
-    return search('ben 10', MediaType.ANIME, page: page);
+    final cacheKey = 'trending:$page';
+    if (_searchCache.containsKey(cacheKey)) {
+      return _searchCache[cacheKey]!;
+    }
+
+    try {
+      final url = page > 1 ? '$_baseUrl/page/$page/' : '$_baseUrl/';
+      _log.i('Fetching RareToon trending home: $url');
+      final res = await _client
+          .get(Uri.parse(url), headers: _browserHeaders)
+          .timeout(const Duration(seconds: 10));
+
+      if (res.statusCode == 200) {
+        final doc = html_parser.parse(res.body);
+        final results = _parseArticleList(doc);
+        if (results.isNotEmpty) {
+          _searchCache[cacheKey] = results;
+          return results;
+        }
+      }
+    } catch (e, st) {
+      _log.w('RareToon trending fetch failed: $e, falling back to classic search', [st]);
+    }
+
+    final popularFallback = await search('ben 10', MediaType.ANIME, page: page);
+    _searchCache[cacheKey] = popularFallback;
+    return popularFallback;
   }
 
   @override

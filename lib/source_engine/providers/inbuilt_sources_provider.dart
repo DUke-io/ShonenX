@@ -1,16 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:shonenx/source_engine/inbuilt_sources/hianime_source.dart';
 import 'package:shonenx/source_engine/inbuilt_sources/hstream_source.dart';
 import 'package:shonenx/source_engine/inbuilt_sources/mangadex_source.dart';
-import 'package:shonenx/source_engine/inbuilt_sources/raretoon_source.dart';
+import 'package:shonenx/source_engine/inbuilt_sources/public_api_source.dart';
 import 'package:shonenx/source_engine/providers/anime_source.dart';
 import 'package:shonenx/source_engine/providers/manga_source.dart';
 
 final inbuiltAnimeSourcesProvider = Provider<List<AnimeSource>>((ref) {
   return [
-    HiAnimeSource(),
-    RareToonSource(),
+    PublicApiSource(),
     HstreamSource(),
   ];
 }, name: 'inbuiltAnimeSourcesProvider');
