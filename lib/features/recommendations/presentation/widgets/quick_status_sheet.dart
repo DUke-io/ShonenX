@@ -7,13 +7,11 @@ import 'package:shonenx/features/library/providers/cloud_library_provider.dart';
 import 'package:shonenx/features/recommendations/presentation/widgets/like_button.dart';
 import 'package:shonenx/features/recommendations/providers/recommendations_provider.dart';
 import 'package:shonenx/features/tracking/domain/models/tracked_status.dart';
-import 'package:shonenx/features/tracking/presentation/widgets/edit_tracker_sheet.dart';
 import 'package:shonenx/features/tracking/providers/media_tracking_provider.dart';
 import 'package:shonenx/features/tracking/providers/tracker_link_provider.dart';
 import 'package:shonenx/features/tracking/providers/tracker_registry.dart';
 import 'package:shonenx/shared/models/unified_media.dart';
 import 'package:shonenx/shared/providers/theme_prefs_provider.dart';
-import 'package:shonenx/shared/widgets/app_bottom_sheet.dart';
 
 class QuickStatusSheet extends ConsumerStatefulWidget {
   final UnifiedMedia media;

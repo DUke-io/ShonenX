@@ -212,7 +212,7 @@ class AniSkipResolver {
     return title
         .replaceAll(RegExp(r'\s*\([^)]*\)'), '')
         .replaceAll(RegExp(r'\s*\[[^\]]*\]'), '')
-        .replaceAll(RegExp(r'(?i)(dub|sub|uncensored|tv|season\s*\d+)', caseSensitive: false), '')
+        .replaceAll(RegExp(r'(dub|sub|uncensored|tv|season\s*\d+)', caseSensitive: false), '')
         .trim();
   }
 }

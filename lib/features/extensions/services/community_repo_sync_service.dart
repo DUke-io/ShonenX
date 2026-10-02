@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'package:anymex_extension_runtime_bridge/anymex_extension_runtime_bridge.dart'
     as bridge;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shonenx/core/utils/app_logger.dart';
 import 'package:shonenx/features/extensions/providers/extension_service_provider.dart';
-import 'package:shonenx/features/extensions/providers/extensions_provider.dart';
 import 'package:shonenx/shared/providers/storage_provider.dart';
 import 'package:shonenx/source_engine/source_registry.dart';
 

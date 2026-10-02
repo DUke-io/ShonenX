@@ -25,7 +25,6 @@ import 'package:shonenx/features/tracking/engine/remote_tracker.dart';
 import 'package:shonenx/features/tracking/engine/tracking_service.dart';
 import 'package:shonenx/features/recommendations/presentation/widgets/quick_status_sheet.dart';
 import 'package:shonenx/features/recommendations/providers/recommendations_provider.dart';
-import 'package:shonenx/features/tracking/presentation/widgets/edit_tracker_sheet.dart';
 import 'package:shonenx/features/tracking/presentation/widgets/tracker_manager_sheet.dart';
 import 'package:shonenx/features/tracking/providers/media_tracking_provider.dart';
 import 'package:shonenx/features/tracking/providers/tracker_link_provider.dart';

@@ -65,7 +65,7 @@ class LikedAnime {
   UnifiedMedia toUnifiedMedia() {
     return UnifiedMedia(
       id: id,
-      type: type ?? MediaType.ANIME,
+      type: type,
       title: MediaTitle(english: title, romaji: title),
       cover: cover,
       banner: banner,
