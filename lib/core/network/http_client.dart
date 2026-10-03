@@ -191,22 +191,43 @@ class HTTP {
         rMethod = rhttp.HttpMethod.get;
     }
 
-    rhttp.HttpBytesResponse res;
-    try {
-      res = await _client.requestBytes(
-        method: rMethod,
-        url: url,
-        headers: requestHeaders.isNotEmpty
-            ? rhttp.HttpHeaders.rawMap(requestHeaders)
-            : null,
-        query: queryParameters,
-        body: rBody,
-      );
-    } catch (e) {
-      if (e is rhttp.RhttpTimeoutException) {
-        throw HttpException('Request timeout');
+    rhttp.HttpBytesResponse? res;
+    int maxRetries = 3;
+    int attempt = 0;
+    
+    while (attempt < maxRetries) {
+      attempt++;
+      try {
+        res = await _client.requestBytes(
+          method: rMethod,
+          url: url,
+          headers: requestHeaders.isNotEmpty
+              ? rhttp.HttpHeaders.rawMap(requestHeaders)
+              : null,
+          query: queryParameters,
+          body: rBody,
+        );
+        // Break out of retry loop on success or client error (4xx)
+        if (res.statusCode < 500) {
+          break;
+        }
+        if (attempt < maxRetries) {
+          await Future.delayed(Duration(milliseconds: 500 * (1 << (attempt - 1))));
+        }
+      } catch (e) {
+        if (attempt >= maxRetries) {
+          if (e is rhttp.RhttpTimeoutException) {
+            throw HttpException('Request timeout after $maxRetries attempts');
+          }
+          rethrow;
+        }
+        // Exponential backoff before retry
+        await Future.delayed(Duration(milliseconds: 500 * (1 << (attempt - 1))));
       }
-      rethrow;
+    }
+
+    if (res == null) {
+      throw HttpException('Request failed after $maxRetries attempts');
     }
 
     final bodyBytes = res.body;
