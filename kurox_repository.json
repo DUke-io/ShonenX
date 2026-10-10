@@ -200,6 +200,26 @@
         ]
       },
       {
+        "name": "Movy",
+        "lang": "en",
+        "baseUrl": "https://www.movy.sx",
+        "type": "tv_movie",
+        "status": "active",
+        "quality": [
+          "4K",
+          "1080p",
+          "720p",
+          "480p"
+        ],
+        "features": [
+          "4K & 1080p HLS",
+          "Movies & TV Series",
+          "Adaptive Bitrate",
+          "Miami & Boise Clusters",
+          "Subtitles Included"
+        ]
+      },
+      {
         "name": "SFlix",
         "lang": "en",
         "baseUrl": "https://sflix.to",
@@ -418,6 +438,16 @@
     ]
   },
   "bundledRepositories": [
+    {
+      "name": "Movy Extension (Movies, TV & Anime)",
+      "engine": "mangayomi",
+      "url": "https://raw.githubusercontent.com/Zcross091/KuroX/main/movy.json",
+      "types": [
+        "anime",
+        "movies",
+        "tv"
+      ]
+    },
     {
       "name": "Mangayomi Official Extensions (Anime, Manga, Novels)",
       "engine": "mangayomi",

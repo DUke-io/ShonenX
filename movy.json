@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Movy",
+    "id": 9898231,
+    "baseUrl": "https://www.movy.sx",
+    "lang": "en",
+    "typeSource": "single",
+    "iconUrl": "https://raw.githubusercontent.com/Zcross091/KuroX/main/assets/images/app_icon.png",
+    "dateFormat": "",
+    "dateFormatLocale": "",
+    "isNsfw": false,
+    "hasCloudflare": false,
+    "sourceCodeUrl": "https://raw.githubusercontent.com/Zcross091/KuroX/main/movy.js",
+    "apiUrl": "",
+    "version": "1.0.0",
+    "isManga": false,
+    "itemType": 1,
+    "isFullData": true,
+    "appMinVerReq": "0.1.0",
+    "additionalParams": "",
+    "sourceCodeLanguage": 1,
+    "notes": "Movy (movy.sx) Movies, TV Series & Anime streaming provider with multi-server 4K/1080p playback."
+  }
+]
