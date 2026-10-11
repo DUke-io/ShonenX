@@ -292,6 +292,9 @@ jobs:
           meson setup /tmp/wpebackend-fdo/build /tmp/wpebackend-fdo --prefix=/usr
           ninja -C /tmp/wpebackend-fdo/build install
           ldconfig
+          find /usr/include -type f \( -name "*wpe*.h" \) 2>/dev/null | while read -r header; do
+            echo -e '\n#ifndef WPE_SETTING_DISABLE_ANIMATIONS\n#ifdef WPE_SETTING_REDUCED_MOTION\n#define WPE_SETTING_DISABLE_ANIMATIONS WPE_SETTING_REDUCED_MOTION\n#else\n#define WPE_SETTING_DISABLE_ANIMATIONS "/wpe-platform/reduced-motion"\n#endif\n#endif\n' >> "$header"
+          done
 
       - name: Setup Rust toolchain (Linux)
         run: rustup default stable
@@ -355,6 +358,12 @@ jobs:
           for i in 1 2 3 4 5; do
             echo "Running flutter pub get (attempt $i/5)..."
             flutter pub get && break || (echo "pub get failed, retrying in 10s..." && sleep 10)
+          done
+
+      - name: Patch plugin compatibility
+        run: |
+          find / -name "in_app_webview_settings.cc" 2>/dev/null | while read -r f; do
+            sed -i 's/WPE_SETTING_DISABLE_ANIMATIONS/"\/wpe-platform\/reduced-motion"/g' "$f"
           done
 
       - name: Build Linux app
