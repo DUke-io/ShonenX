@@ -431,14 +431,6 @@ class DiscordSettingsScreen extends ConsumerWidget {
                             .toggleEnabled(value);
                       },
                     ),
-                    if (rpcState.isEnabled)
-                      SettingsActionTile(
-                        icon: Icons.edit_note_rounded,
-                        title: 'Idle Activity Status',
-                        subtitle:
-                            '${settings.idleActivity} • ${settings.idleDetails}',
-                        onTap: () => _showEditIdleSheet(context, ref, settings),
-                      ),
                   ],
                 ),
 
@@ -455,14 +447,14 @@ class DiscordSettingsScreen extends ConsumerWidget {
                   SettingsSection(
                     title: 'Presence Customization',
                     children: [
-                      SettingsTile(
+                      SettingsActionTile(
                         icon: Icons.edit_note_rounded,
                         title: 'Customize Idle Status',
                         subtitle:
                             '${settings.idleActivity} • ${settings.idleDetails}',
                         onTap: () => _showEditIdleSheet(context, ref, settings),
                       ),
-                      SettingsTile(
+                      SettingsActionTile(
                         icon: Icons.tune_rounded,
                         title: 'Discord App & Logo Configuration',
                         subtitle: settings.customApplicationId != null

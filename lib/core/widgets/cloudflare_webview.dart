@@ -146,7 +146,7 @@ class _CloudflareWebViewState extends State<CloudflareWebView> {
                     thirdPartyCookiesEnabled: true,
                     limitsNavigationsToAppBoundDomains: false,
                   ),
-                  shouldOverrideUrlLoading: (_, _) async =>
+                  shouldOverrideUrlLoading: (_, __) async =>
                       webview.NavigationActionPolicy.ALLOW,
                   onWebViewCreated: (controller) {
                     _controller = controller;

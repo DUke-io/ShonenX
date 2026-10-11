@@ -364,7 +364,7 @@ void _showMediaStylePickerSheet({
       ),
       optionsTitle: optionsTitle,
       options: Consumer(
-        builder: (_, r, _) {
+        builder: (context, r, child) {
           final notifier = r.read(uiPrefsProvider.notifier);
           final uiState = r.watch(uiPrefsProvider);
           final current = getStyle(uiState);
@@ -544,7 +544,7 @@ void showEpisodeModeSheet(
     title: 'Episode View Mode',
     child: UiSettingsSheetLayout(
       preview: Consumer(
-        builder: (_, r, _) {
+        builder: (context, r, child) {
           final current = r.watch(
             uiPrefsProvider.select((s) => s.episodeViewMode),
           );
@@ -553,7 +553,7 @@ void showEpisodeModeSheet(
       ),
       optionsTitle: 'Episode View Mode Preset',
       options: Consumer(
-        builder: (_, r, _) {
+        builder: (context, r, child) {
           final current = r.watch(
             uiPrefsProvider.select((s) => s.episodeViewMode),
           );
@@ -599,7 +599,7 @@ void showNavBarStyleSheet(
     context: context,
     title: 'Navigation Bar Style',
     child: Consumer(
-      builder: (_, r, _) {
+      builder: (context, r, child) {
         final current = r.watch(uiPrefsProvider.select((s) => s.navBarStyle));
 
         return SingleChildScrollView(

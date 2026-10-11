@@ -228,7 +228,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           'THE NEW ANIFLIX',
                           style: Theme.of(context).textTheme.headlineMedium
                               ?.copyWith(
-                                fontWeight: FontWeight.extrabold,
+                                fontWeight: FontWeight.w800,
                                 letterSpacing: 2.5,
                                 color: cs.onSurface,
                               ),
