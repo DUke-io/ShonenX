@@ -277,20 +277,15 @@ jobs:
     needs: resolve-release-tag
     if: github.event_name == 'push' || github.event.inputs.build_linux == 'true'
     runs-on: ubuntu-latest
-    container:
-      image: archlinux:base-devel
 
     steps:
-      - name: Install system dependencies & optimize Arch container
+      - name: Install system dependencies
         run: |
-          pacman -Syu --noconfirm git jq zip unzip curl xz tar clang cmake ninja pkgconf gtk3 libsecret webkit2gtk-4.1 wpewebkit mpv alsa-lib rustup
-          pacman -Scc --noconfirm
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev libmpv-dev libasound2-dev libwebkit2gtk-4.1-dev libwpe-1.0-dev libwpewebkit-1.0-dev
 
       - name: Setup Rust toolchain (Linux)
-        run: rustup default stable
-
-      - name: Trust git directory
-        run: git config --global --add safe.directory '*'
+        uses: dtolnay/rust-toolchain@stable
 
       - uses: actions/checkout@v4
 
@@ -314,7 +309,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.35.7
-          cache: false
+          cache: true
 
       - name: Create env file
         run: |
