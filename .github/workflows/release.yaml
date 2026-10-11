@@ -276,19 +276,28 @@ jobs:
   build-linux:
     needs: resolve-release-tag
     if: github.event_name == 'push' || github.event.inputs.build_linux == 'true'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
 
     steps:
-      - name: Install system dependencies
+      - name: Install system dependencies & build WPE backend
         run: |
-          sudo add-apt-repository universe -y
-          sudo apt-get update
-          sudo apt-get install -y clang-15 lld-15 cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev libmpv-dev libasound2-dev libwebkit2gtk-4.1-dev libwpe-1.0-dev libwpewebkit-1.0-dev libwpebackend-fdo-1.0-dev
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-15 100
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-15 100
+          pacman -Syu --noconfirm git jq zip unzip curl xz tar clang cmake ninja pkgconf gtk3 libsecret webkit2gtk-4.1 wpewebkit mpv alsa-lib rustup meson libxkbcommon libepoxy wayland-protocols wayland
+          pacman -Scc --noconfirm
+          git clone --depth 1 https://github.com/WebPlatformForEmbedded/libwpe.git /tmp/libwpe
+          meson setup /tmp/libwpe/build /tmp/libwpe --prefix=/usr
+          ninja -C /tmp/libwpe/build install
+          git clone --depth 1 https://github.com/Igalia/WPEBackend-fdo.git /tmp/wpebackend-fdo
+          meson setup /tmp/wpebackend-fdo/build /tmp/wpebackend-fdo --prefix=/usr
+          ninja -C /tmp/wpebackend-fdo/build install
+          ldconfig
 
       - name: Setup Rust toolchain (Linux)
-        uses: dtolnay/rust-toolchain@stable
+        run: rustup default stable
+
+      - name: Trust git directory
+        run: git config --global --add safe.directory '*'
 
       - uses: actions/checkout@v4
 
@@ -349,10 +358,7 @@ jobs:
           done
 
       - name: Build Linux app
-        run: |
-          export CFLAGS="-Wno-unknown-warning-option ${CFLAGS:-}"
-          export CXXFLAGS="-Wno-unknown-warning-option ${CXXFLAGS:-}"
-          flutter build linux --release --obfuscate --split-debug-info=build/symbols --tree-shake-icons --dart-define-from-file=keys.json
+        run: flutter build linux --release --obfuscate --split-debug-info=build/symbols --tree-shake-icons --dart-define-from-file=keys.json
 
       - name: Package Linux PC Artifacts
         run: |
