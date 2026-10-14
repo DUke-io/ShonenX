@@ -15,8 +15,23 @@ class MediaMatchService {
   }) async {
     var results = await _mediaSource.search(cleanTitle, _type);
 
-    if (results.isEmpty && romajiTitle != null) {
+    // If no match found and title had punctuation (colons, hyphens), try sanitized title
+    if (results.isEmpty) {
+      final sanitized = _sanitizeTitle(cleanTitle);
+      if (sanitized != cleanTitle && sanitized.isNotEmpty) {
+        results = await _mediaSource.search(sanitized, _type);
+      }
+    }
+
+    // Fallback to Romaji title if English title returned no match
+    if (results.isEmpty && romajiTitle != null && romajiTitle.trim().isNotEmpty) {
       results = await _mediaSource.search(romajiTitle, _type);
+      if (results.isEmpty) {
+        final sanitizedRomaji = _sanitizeTitle(romajiTitle);
+        if (sanitizedRomaji != romajiTitle && sanitizedRomaji.isNotEmpty) {
+          results = await _mediaSource.search(sanitizedRomaji, _type);
+        }
+      }
     }
 
     if (results.isEmpty) {
@@ -69,5 +84,12 @@ class MediaMatchService {
     results.sort((a, b) => getScore(b).compareTo(getScore(a)));
 
     return results.first;
+  }
+
+  String _sanitizeTitle(String title) {
+    return title
+        .replaceAll(RegExp(r'[:\-_/]+'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
   }
 }

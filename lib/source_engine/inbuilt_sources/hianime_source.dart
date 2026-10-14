@@ -110,70 +110,24 @@ class HiAnimeSource implements AnimeSource {
     final methodLog = _log.child('search');
     try {
       final cleanQuery = query.trim();
-      final url = cleanQuery.isEmpty
-          ? '$_baseUrl/top-airing?page=$page'
-          : '$_baseUrl/search?keyword=${Uri.encodeQueryComponent(cleanQuery)}&page=$page';
-
-      http.Response response;
-      try {
-        response = await _client.get(
-          Uri.parse(url),
-          headers: _defaultHeaders,
-        ).timeout(const Duration(seconds: 6));
-      } catch (_) {
-        // Fallback to hianime.at if original domain timed out
-        final fallbackUrl = cleanQuery.isEmpty
-            ? 'https://hianime.at/top-airing?page=$page'
-            : 'https://hianime.at/search?keyword=${Uri.encodeQueryComponent(cleanQuery)}&page=$page';
-        response = await _client.get(
-          Uri.parse(fallbackUrl),
-          headers: _defaultHeaders,
-        ).timeout(const Duration(seconds: 6));
+      if (cleanQuery.isEmpty) {
+        return _executeSearch('', page);
       }
 
-      if (response.statusCode != 200) return [];
+      // Sanitize colons, hyphens, and multiple spaces into clean keywords
+      final sanitizedQuery = cleanQuery
+          .replaceAll(RegExp(r'[:\-_/]+'), ' ')
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .trim();
 
-      final document = html_parser.parse(response.body);
-      final items = document.querySelectorAll('.film_list-wrap .flw-item');
+      // Query HiAnime with original keyword first
+      List<UnifiedMedia> results = await _executeSearch(cleanQuery, page);
 
-      final results = <UnifiedMedia>[];
-
-      for (final item in items) {
-        final titleEl = item.querySelector('.film-detail .film-name a') ??
-            item.querySelector('.film-name a');
-        final posterEl = item.querySelector('.film-poster img');
-
-        if (titleEl == null) continue;
-
-        final title = titleEl.text.trim();
-        final href = titleEl.attributes['href'] ?? '';
-        final poster = posterEl?.attributes['data-src'] ??
-            posterEl?.attributes['src'] ??
-            '';
-
-        String cleanSlug = href;
-        if (cleanSlug.startsWith('http')) {
-          final uri = Uri.tryParse(cleanSlug);
-          cleanSlug = (uri != null && uri.pathSegments.isNotEmpty)
-              ? uri.pathSegments.last
-              : cleanSlug;
-        } else if (cleanSlug.startsWith('/')) {
-          cleanSlug = cleanSlug.substring(1);
-        }
-
-        if (cleanSlug.isEmpty) continue;
-
-        results.add(
-          UnifiedMedia(
-            id: cleanSlug,
-            type: MediaType.ANIME,
-            sourceId: sourceInfo.id,
-            sourceName: sourceInfo.name,
-            providerId: cleanSlug,
-            title: MediaTitle(english: title),
-            cover: poster,
-          ),
-        );
+      // If no results and query contains punctuation, fallback to sanitized query
+      if (results.isEmpty &&
+          sanitizedQuery != cleanQuery &&
+          sanitizedQuery.isNotEmpty) {
+        results = await _executeSearch(sanitizedQuery, page);
       }
 
       if (results.isNotEmpty) {
@@ -184,6 +138,75 @@ class HiAnimeSource implements AnimeSource {
       methodLog.e('Search failed for "$query"', [e, st]);
       return [];
     }
+  }
+
+  Future<List<UnifiedMedia>> _executeSearch(String cleanQuery, int page) async {
+    final url = cleanQuery.isEmpty
+        ? '$_baseUrl/top-airing?page=$page'
+        : '$_baseUrl/search?keyword=${Uri.encodeQueryComponent(cleanQuery)}&page=$page';
+
+    http.Response response;
+    try {
+      response = await _client.get(
+        Uri.parse(url),
+        headers: _defaultHeaders,
+      ).timeout(const Duration(seconds: 8));
+    } catch (_) {
+      // Fallback to hianime.at if original domain timed out
+      final fallbackUrl = cleanQuery.isEmpty
+          ? 'https://hianime.at/top-airing?page=$page'
+          : 'https://hianime.at/search?keyword=${Uri.encodeQueryComponent(cleanQuery)}&page=$page';
+      response = await _client.get(
+        Uri.parse(fallbackUrl),
+        headers: _defaultHeaders,
+      ).timeout(const Duration(seconds: 8));
+    }
+
+    if (response.statusCode != 200) return [];
+
+    final document = html_parser.parse(response.body);
+    final items = document.querySelectorAll('.film_list-wrap .flw-item');
+
+    final results = <UnifiedMedia>[];
+
+    for (final item in items) {
+      final titleEl = item.querySelector('.film-detail .film-name a') ??
+          item.querySelector('.film-name a');
+      final posterEl = item.querySelector('.film-poster img');
+
+      if (titleEl == null) continue;
+
+      final title = titleEl.text.trim();
+      final href = titleEl.attributes['href'] ?? '';
+      final poster = posterEl?.attributes['data-src'] ??
+          posterEl?.attributes['src'] ??
+          '';
+
+      String cleanSlug = href;
+      if (cleanSlug.startsWith('http')) {
+        final uri = Uri.tryParse(cleanSlug);
+        cleanSlug = (uri != null && uri.pathSegments.isNotEmpty)
+            ? uri.pathSegments.last
+            : cleanSlug;
+      } else if (cleanSlug.startsWith('/')) {
+        cleanSlug = cleanSlug.substring(1);
+      }
+
+      if (cleanSlug.isEmpty) continue;
+
+      results.add(
+        UnifiedMedia(
+          id: cleanSlug,
+          type: MediaType.ANIME,
+          sourceId: sourceInfo.id,
+          sourceName: sourceInfo.name,
+          providerId: cleanSlug,
+          title: MediaTitle(english: title),
+          cover: poster,
+        ),
+      );
+    }
+    return results;
   }
 
   @override

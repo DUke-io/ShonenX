@@ -99,7 +99,10 @@ class MediaMatchNotifier extends AsyncNotifier<MatchedMediaState> {
     final result = await MediaMatchService(
       sourceImpl,
       args.type,
-    ).findBestMatch(args.mediaTitle);
+    ).findBestMatch(
+      args.mediaTitle,
+      romajiTitle: args.mediaTitleRomaji,
+    );
 
     if (result == null) {
       return const MatchedMediaState();
